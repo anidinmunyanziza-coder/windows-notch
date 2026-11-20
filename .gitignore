@@ -1,0 +1,25 @@
+# Build output
+bin/
+obj/
+
+# Visual Studio / Rider
+.vs/
+.idea/
+*.user
+*.suo
+*.userprefs
+
+# Tests
+TestResults/
+*.trx
+
+# NuGet
+*.nupkg
+packages/
+
+# graphify (generated; holds machine-specific paths)
+graphify-out/
+
+# OS / OneDrive
+Thumbs.db
+desktop.ini
