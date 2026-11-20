@@ -1,0 +1,34 @@
+<Window x:Class="Atoll.Platform.Windows.Windowing.NotchWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d"
+        Title="Atoll Notch"
+        WindowStyle="None"
+        AllowsTransparency="True"
+        Background="Transparent"
+        Topmost="True"
+        ShowInTaskbar="False"
+        ShowActivated="False"
+        ResizeMode="NoResize"
+        AllowDrop="True"
+        FontFamily="SF Pro Display, SF Pro Text, Segoe UI Variable, Segoe UI"
+        d:DesignWidth="150" d:DesignHeight="32">
+    <!-- Fixed-size transparent window; only this Surface is painted/hit-tested.
+         The Surface (not the Window) animates between the closed and open size,
+         so the top-level HWND is never resized per frame. NotchBg draws the real
+         macOS notch shape (flat top with concave shoulders, rounded bottom) via a
+         geometry rebuilt in code; its radii animate with the spring. -->
+    <Grid x:Name="Surface" HorizontalAlignment="Center" VerticalAlignment="Top">
+        <Path x:Name="NotchBg" Fill="#000000">
+            <Path.Effect>
+                <DropShadowEffect Color="Black" Opacity="0.6" BlurRadius="10" ShadowDepth="0"/>
+            </Path.Effect>
+        </Path>
+        <Border x:Name="ContentHost"/>
+        <!-- Matched-geometry heroes (album art, spectrum) and blur-replace ghosts
+             fly here, above the content and clipped to the notch shape. -->
+        <Canvas x:Name="MorphLayer" IsHitTestVisible="False"/>
+    </Grid>
+</Window>

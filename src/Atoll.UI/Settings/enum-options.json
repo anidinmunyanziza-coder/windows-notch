@@ -1,0 +1,1671 @@
+﻿[
+    {
+        "name":  "ActivityType",
+        "values":  [
+                       "mediaPlayback",
+                       "charging",
+                       "download"
+                   ]
+    },
+    {
+        "name":  "AIModelProvider",
+        "values":  [
+                       "Gemini",
+                       "OpenAI GPT",
+                       "Claude",
+                       "Local Model",
+                       "Groq"
+                   ]
+    },
+    {
+        "name":  "AirPodsListeningMode",
+        "values":  [
+                       "noiseCancellation",
+                       "transparency",
+                       "adaptive",
+                       "conversationAwareness",
+                       "off"
+                   ]
+    },
+    {
+        "name":  "AnimationImportError",
+        "values":  [
+                       "invalidFileType",
+                       "invalidJSON",
+                       "downloadFailed"
+                   ]
+    },
+    {
+        "name":  "AnimationLoopMode",
+        "values":  [
+                       "Loop",
+                       "Play Once",
+                       "Auto Reverse"
+                   ]
+    },
+    {
+        "name":  "AnimationSource",
+        "values":  [
+                       "lottieFile",
+                       "lottieURL"
+                   ]
+    },
+    {
+        "name":  "AntigravityPool",
+        "values":  [
+                       "Gemini",
+                       "Claude"
+                   ]
+    },
+    {
+        "name":  "AppleNotesSyncError",
+        "values":  [
+                       "automationDenied",
+                       "scriptFailed"
+                   ]
+    },
+    {
+        "name":  "ApplePlatform",
+        "values":  [
+                       "intel",
+                       "m1",
+                       "m1Pro",
+                       "m1Max",
+                       "m1Ultra",
+                       "m2",
+                       "m2Pro",
+                       "m2Max",
+                       "m2Ultra",
+                       "m3",
+                       "m3Pro",
+                       "m3Max",
+                       "m3Ultra",
+                       "m4",
+                       "m4Pro",
+                       "m4Max",
+                       "m4Ultra",
+                       "m5",
+                       "m5Pro",
+                       "m5Max",
+                       "m5Ultra"
+                   ]
+    },
+    {
+        "name":  "AppleScriptError",
+        "values":  [
+                       "initScriptFailed",
+                       "runtimeError",
+                       "emptyOutput"
+                   ]
+    },
+    {
+        "name":  "AppVolumeTapError",
+        "values":  [
+                       "tapCreationFailed",
+                       "aggregateCreationFailed",
+                       "ioProcCreationFailed",
+                       "deviceStartFailed"
+                   ]
+    },
+    {
+        "name":  "ArtworkOverlayMode",
+        "values":  [
+                       "none",
+                       "spotifyFallback"
+                   ]
+    },
+    {
+        "name":  "AttendanceStatus",
+        "values":  [
+                       "accepted",
+                       "maybe",
+                       "pending",
+                       "declined",
+                       "unknown"
+                   ]
+    },
+    {
+        "name":  "AuthenticationState",
+        "values":  [
+                       "unauthenticated",
+                       "authenticating",
+                       "authenticated",
+                       "failed"
+                   ]
+    },
+    {
+        "name":  "BatteryError",
+        "values":  [
+                       "powerSourceUnavailable",
+                       "batteryInfoUnavailable",
+                       "batteryParameterMissing"
+                   ]
+    },
+    {
+        "name":  "BatteryEvent",
+        "values":  [
+                       "powerSourceChanged",
+                       "batteryLevelChanged",
+                       "lowPowerModeChanged",
+                       "isChargingChanged",
+                       "timeToFullChargeChanged",
+                       "maxCapacityChanged",
+                       "error"
+                   ]
+    },
+    {
+        "name":  "BatteryNotificationStyle",
+        "values":  [
+                       "standard",
+                       "compact"
+                   ]
+    },
+    {
+        "name":  "BatteryTemporaryHUDKind",
+        "values":  [
+                       "charging",
+                       "lowBattery",
+                       "fullBattery"
+                   ]
+    },
+    {
+        "name":  "BetterDisplayControlCategory",
+        "values":  [
+                       "brightness",
+                       "volume",
+                       "other"
+                   ]
+    },
+    {
+        "name":  "BluetoothAudioDeviceType",
+        "values":  [
+                       "airpods",
+                       "airpodsGen3",
+                       "airpodsGen4",
+                       "airpodsPro",
+                       "airpodsPro3",
+                       "airpodsMax",
+                       "beats",
+                       "beatsstudio",
+                       "beatssolo",
+                       "headphones",
+                       "speaker",
+                       "generic"
+                   ]
+    },
+    {
+        "name":  "BluetoothHUDIconStyle",
+        "values":  [
+                       "symbol",
+                       "threeD"
+                   ]
+    },
+    {
+        "name":  "CaffeinateDuration",
+        "values":  [
+                       "indefinite",
+                       "fifteenMinutes",
+                       "thirtyMinutes",
+                       "oneHour",
+                       "twoHours",
+                       "fourHours"
+                   ]
+    },
+    {
+        "name":  "CalendarAfterStartWindow",
+        "values":  [
+                       "1m",
+                       "5m",
+                       "10m",
+                       "15m",
+                       "30m",
+                       "45m",
+                       "1h",
+                       "2h"
+                   ]
+    },
+    {
+        "name":  "CalendarLookaheadOption",
+        "values":  [
+                       "15m",
+                       "30m",
+                       "1h",
+                       "3h",
+                       "6h",
+                       "12h",
+                       "rest_of_day",
+                       "all_time"
+                   ]
+    },
+    {
+        "name":  "CalendarLookaheadWindow",
+        "values":  [
+                       "15m",
+                       "30m",
+                       "1h",
+                       "3h",
+                       "6h",
+                       "12h",
+                       "rest_of_day",
+                       "all_time"
+                   ]
+    },
+    {
+        "name":  "CalendarSelectionState",
+        "values":  [
+                       "all",
+                       "selected"
+                   ]
+    },
+    {
+        "name":  "CapsLockIndicatorTintMode",
+        "values":  [
+                       "green",
+                       "accent",
+                       "white"
+                   ]
+    },
+    {
+        "name":  "Category",
+        "values":  [
+                       "good",
+                       "fair",
+                       "moderate",
+                       "unhealthyForSensitive",
+                       "unhealthy",
+                       "poor",
+                       "veryPoor",
+                       "veryUnhealthy",
+                       "extremelyPoor",
+                       "hazardous",
+                       "unknown"
+                   ]
+    },
+    {
+        "name":  "Channel",
+        "values":  [
+                       "music",
+                       "standalone"
+                   ]
+    },
+    {
+        "name":  "ClipboardDisplayMode",
+        "values":  [
+                       "popover",
+                       "panel",
+                       "separateTab",
+                       "notchTab"
+                   ]
+    },
+    {
+        "name":  "ClipboardItemType",
+        "values":  [
+                       "text",
+                       "url",
+                       "file",
+                       "image",
+                       "rtf",
+                       "unknown"
+                   ]
+    },
+    {
+        "name":  "ClipboardTab",
+        "values":  [
+                       "History",
+                       "Favorites"
+                   ]
+    },
+    {
+        "name":  "ClockTimerControl",
+        "values":  [
+                       "pause",
+                       "resume",
+                       "cancel"
+                   ]
+    },
+    {
+        "name":  "CodingKeys",
+        "values":  [
+                       "type",
+                       "value"
+                   ]
+    },
+    {
+        "name":  "ColorCodingMode",
+        "values":  [
+                       "volume",
+                       "battery"
+                   ]
+    },
+    {
+        "name":  "ColorExtractionMode",
+        "values":  [
+                       "legacy",
+                       "vibrant"
+                   ]
+    },
+    {
+        "name":  "ColorPickerDisplayMode",
+        "values":  [
+                       "popover",
+                       "panel"
+                   ]
+    },
+    {
+        "name":  "ConferenceProvider",
+        "values":  [
+                       "zoom",
+                       "teams",
+                       "meet",
+                       "webex",
+                       "facetime",
+                       "gotomeeting",
+                       "bluejeans",
+                       "whereby",
+                       "jitsi",
+                       "discord",
+                       "generic"
+                   ]
+    },
+    {
+        "name":  "ConnectivityHUDState",
+        "values":  [
+                       "hidden",
+                       "noConnection",
+                       "wifi",
+                       "hotspot"
+                   ]
+    },
+    {
+        "name":  "ContentType",
+        "values":  [
+                       "normal",
+                       "menu",
+                       "settings"
+                   ]
+    },
+    {
+        "name":  "CredentialSource",
+        "values":  [
+                       "file",
+                       "keychain",
+                       "account"
+                   ]
+    },
+    {
+        "name":  "CursorQuotaPayloadError",
+        "values":  [
+                       "missingPlanUsage"
+                   ]
+    },
+    {
+        "name":  "Direction",
+        "values":  [
+                       "forward",
+                       "backward"
+                   ]
+    },
+    {
+        "name":  "Display",
+        "values":  [
+                       "notFound",
+                       "notSilicon",
+                       "notStandard"
+                   ]
+    },
+    {
+        "name":  "DownloadIconStyle",
+        "values":  [
+                       "Only app icon",
+                       "Only download icon",
+                       "Icon and app icon"
+                   ]
+    },
+    {
+        "name":  "DownloadIndicatorStyle",
+        "values":  [
+                       "Progress",
+                       "Percentage",
+                       "Circle"
+                   ]
+    },
+    {
+        "name":  "EventStatus",
+        "values":  [
+                       "upcoming",
+                       "inProgress",
+                       "ended"
+                   ]
+    },
+    {
+        "name":  "EventType",
+        "values":  [
+                       "event",
+                       "birthday",
+                       "reminder"
+                   ]
+    },
+    {
+        "name":  "ExtensionAuthorizationStatus",
+        "values":  [
+                       "pending",
+                       "authorized",
+                       "denied",
+                       "revoked"
+                   ]
+    },
+    {
+        "name":  "ExtensionPermissionScope",
+        "values":  [
+                       "liveActivities",
+                       "lockScreenWidgets",
+                       "notchExperiences",
+                       "fileSharing"
+                   ]
+    },
+    {
+        "name":  "ExtensionTrailingRenderable",
+        "values":  [
+                       "content",
+                       "indicator"
+                   ]
+    },
+    {
+        "name":  "ExtensionValidationError",
+        "values":  [
+                       "featureDisabled",
+                       "unauthorized",
+                       "invalidDescriptor",
+                       "rateLimited",
+                       "exceedsCapacity",
+                       "duplicateIdentifier",
+                       "unsupportedContent"
+                   ]
+    },
+    {
+        "name":  "ExtensionXPCServiceError",
+        "values":  [
+                       "bundleMismatch",
+                       "received"
+                   ]
+    },
+    {
+        "name":  "ExternalDisplayStyle",
+        "values":  [
+                       "Standard Notch",
+                       "Dynamic Island"
+                   ]
+    },
+    {
+        "name":  "FanMode",
+        "values":  [
+                       "automatic",
+                       "forced"
+                   ]
+    },
+    {
+        "name":  "FantasticalViewStyle",
+        "values":  [
+                       "mini",
+                       "calendar"
+                   ]
+    },
+    {
+        "name":  "FetchOutcome",
+        "values":  [
+                       "success",
+                       "week",
+                       "authFailure",
+                       "otherFailure"
+                   ]
+    },
+    {
+        "name":  "FileType",
+        "values":  [
+                       "document",
+                       "image",
+                       "audio",
+                       "video",
+                       "other"
+                   ]
+    },
+    {
+        "name":  "FocusModeType",
+        "values":  [
+                       "com.apple.donotdisturb.mode",
+                       "com.apple.focus.work",
+                       "com.apple.focus.personal",
+                       "com.apple.focus.sleep",
+                       "com.apple.focus.driving",
+                       "com.apple.focus.fitness",
+                       "com.apple.focus.gaming",
+                       "com.apple.focus.mindfulness",
+                       "com.apple.focus.reading",
+                       "com.apple.focus.reduce-interruptions",
+                       "com.apple.focus.custom",
+                       ""
+                   ]
+    },
+    {
+        "name":  "FocusMonitoringMode",
+        "values":  [
+                       "withoutDevTools",
+                       "useDevTools"
+                   ]
+    },
+    {
+        "name":  "Glyph",
+        "values":  [
+                       "symbol",
+                       "skipArrows"
+                   ]
+    },
+    {
+        "name":  "Grant",
+        "values":  [
+                       "authorizationCode",
+                       "refresh"
+                   ]
+    },
+    {
+        "name":  "GraphType",
+        "values":  [
+                       "single",
+                       "dual"
+                   ]
+    },
+    {
+        "name":  "HideNotchOption",
+        "values":  [
+                       "always",
+                       "nowPlayingOnly",
+                       "never"
+                   ]
+    },
+    {
+        "name":  "ImageFormat",
+        "values":  [
+                       "png",
+                       "jpeg",
+                       "heic",
+                       "tiff",
+                       "bmp"
+                   ]
+    },
+    {
+        "name":  "ImageProcessingError",
+        "values":  [
+                       "invalidImage",
+                       "backgroundRemovalFailed",
+                       "conversionFailed",
+                       "pdfCreationFailed",
+                       "noImagesProvided",
+                       "saveFailed"
+                   ]
+    },
+    {
+        "name":  "IndicatorLayout",
+        "values":  [
+                       "none",
+                       "cameraOnly",
+                       "microphoneOnly",
+                       "cameraAndMicrophone",
+                       "recordingOnly",
+                       "recordingWithCamera",
+                       "recordingWithMicrophone",
+                       "recordingWithBoth"
+                   ]
+    },
+    {
+        "name":  "Interaction",
+        "values":  [
+                       "none",
+                       "nudge",
+                       "wiggle"
+                   ]
+    },
+    {
+        "name":  "Keyboard",
+        "values":  [
+                       "notFound",
+                       "notSilicon",
+                       "notStandard"
+                   ]
+    },
+    {
+        "name":  "KindTag",
+        "values":  [
+                       "file",
+                       "text",
+                       "link"
+                   ]
+    },
+    {
+        "name":  "LikeState",
+        "values":  [
+                       "LIKE",
+                       "DISLIKE",
+                       "INDIFFERENT"
+                   ]
+    },
+    {
+        "name":  "LiquidGlassVariant",
+        "values":  [
+                       "v0",
+                       "v1",
+                       "v2",
+                       "v3",
+                       "v4",
+                       "v5",
+                       "v6",
+                       "v7",
+                       "v8",
+                       "v9",
+                       "v10",
+                       "v11",
+                       "v12",
+                       "v13",
+                       "v14",
+                       "v15",
+                       "v16",
+                       "v17",
+                       "v18",
+                       "v19"
+                   ]
+    },
+    {
+        "name":  "LocalSendServiceError",
+        "values":  [
+                       "noDeviceSelected",
+                       "noTransferableItems",
+                       "invalidTarget",
+                       "invalidResponse",
+                       "server",
+                       "body",
+                       "transferRejected"
+                   ]
+    },
+    {
+        "name":  "LocalSendTransferState",
+        "values":  [
+                       "idle",
+                       "sending",
+                       "completed",
+                       "failed",
+                       "rejected"
+                   ]
+    },
+    {
+        "name":  "LockScreenGlassCustomizationMode",
+        "values":  [
+                       "Standard",
+                       "Custom Liquid"
+                   ]
+    },
+    {
+        "name":  "LockScreenGlassStyle",
+        "values":  [
+                       "Liquid Glass",
+                       "Frosted Glass"
+                   ]
+    },
+    {
+        "name":  "LockScreenLiveActivityIconStyle",
+        "values":  [
+                       "lock",
+                       "fingerprint",
+                       "both"
+                   ]
+    },
+    {
+        "name":  "LockScreenReminderChipStyle",
+        "values":  [
+                       "Event color",
+                       "White"
+                   ]
+    },
+    {
+        "name":  "LockScreenSettingsSection",
+        "values":  [
+                       "general",
+                       "widgets"
+                   ]
+    },
+    {
+        "name":  "LockScreenTimerSurfaceMode",
+        "values":  [
+                       "Classic",
+                       "Glass"
+                   ]
+    },
+    {
+        "name":  "LockScreenWeatherAirQualityScale",
+        "values":  [
+                       "U.S. AQI",
+                       "EAQI"
+                   ]
+    },
+    {
+        "name":  "LockScreenWeatherProviderSource",
+        "values":  [
+                       "wttr.in",
+                       "Open Meteo"
+                   ]
+    },
+    {
+        "name":  "LockScreenWeatherTemperatureUnit",
+        "values":  [
+                       "Celsius",
+                       "Fahrenheit"
+                   ]
+    },
+    {
+        "name":  "LockScreenWeatherWidgetStyle",
+        "values":  [
+                       "Inline",
+                       "Circular"
+                   ]
+    },
+    {
+        "name":  "LockScreenWidgetAppearance",
+        "values":  [
+                       "Dark",
+                       "Light"
+                   ]
+    },
+    {
+        "name":  "LogCategory",
+        "values":  [
+                       "ðŸ”„",
+                       "ðŸ’¾",
+                       "âš¡ï¸",
+                       "ðŸŽ¨",
+                       "ðŸŒ",
+                       "âŒ",
+                       "âš ï¸",
+                       "âœ…",
+                       "ðŸ”",
+                       "ðŸ§©"
+                   ]
+    },
+    {
+        "name":  "LogLevel",
+        "values":  [
+                       "none",
+                       "error",
+                       "warning",
+                       "info",
+                       "debug"
+                   ]
+    },
+    {
+        "name":  "LunarControlCategory",
+        "values":  [
+                       "brightness",
+                       "contrast",
+                       "volume"
+                   ]
+    },
+    {
+        "name":  "LyricHighlightStyle",
+        "values":  [
+                       "Sweep",
+                       "Gradient",
+                       "Solid"
+                   ]
+    },
+    {
+        "name":  "LyricRow",
+        "values":  [
+                       "line",
+                       "text",
+                       "instrumental"
+                   ]
+    },
+    {
+        "name":  "LyricsAvailability",
+        "values":  [
+                       "loading",
+                       "timed",
+                       "untimed",
+                       "instrumental",
+                       "unavailable"
+                   ]
+    },
+    {
+        "name":  "MarqueeMode",
+        "values":  [
+                       "replace",
+                       "union",
+                       "toggle"
+                   ]
+    },
+    {
+        "name":  "MediaCheckerError",
+        "values":  [
+                       "missingResources",
+                       "processExecutionFailed",
+                       "timeout"
+                   ]
+    },
+    {
+        "name":  "MediaControllerType",
+        "values":  [
+                       "Now Playing",
+                       "Apple Music",
+                       "Spotify",
+                       "Youtube Music",
+                       "Amazon Music",
+                       "TIDAL",
+                       "Cider"
+                   ]
+    },
+    {
+        "name":  "MediaKeyDirection",
+        "values":  [
+                       "up",
+                       "down"
+                   ]
+    },
+    {
+        "name":  "MediaKeyStep",
+        "values":  [
+                       "standard",
+                       "fine"
+                   ]
+    },
+    {
+        "name":  "MediaSourceSupport",
+        "values":  [
+                       "full",
+                       "readOnly",
+                       "none"
+                   ]
+    },
+    {
+        "name":  "MemoryPressureLevel",
+        "values":  [
+                       "normal",
+                       "warning",
+                       "critical"
+                   ]
+    },
+    {
+        "name":  "MirrorShapeEnum",
+        "values":  [
+                       "Rectangular",
+                       "Circular"
+                   ]
+    },
+    {
+        "name":  "Mode",
+        "values":  [
+                       "recommended",
+                       "all"
+                   ]
+    },
+    {
+        "name":  "MusicAuxiliaryControl",
+        "values":  [
+                       "shuffle",
+                       "repeatMode",
+                       "mediaOutput",
+                       "lyrics"
+                   ]
+    },
+    {
+        "name":  "MusicControlButton",
+        "values":  [
+                       "shuffle",
+                       "trackBackward",
+                       "playPause",
+                       "trackForward",
+                       "repeatMode",
+                       "mediaOutput",
+                       "airPlay",
+                       "lyrics",
+                       "likeTrack",
+                       "seekBackward",
+                       "seekForward",
+                       "none"
+                   ]
+    },
+    {
+        "name":  "MusicSecondaryLiveActivity",
+        "values":  [
+                       "timer",
+                       "reminder",
+                       "recording",
+                       "focus",
+                       "capsLock",
+                       "extensionPayload",
+                       "shelf"
+                   ]
+    },
+    {
+        "name":  "MusicSkipBehavior",
+        "values":  [
+                       "track",
+                       "tenSecond"
+                   ]
+    },
+    {
+        "name":  "NetworkInterfaceType",
+        "values":  [
+                       "wifi",
+                       "ethernet",
+                       "loopback",
+                       "cellular",
+                       "other"
+                   ]
+    },
+    {
+        "name":  "NewAPIClientError",
+        "values":  [
+                       "invalidBaseURL",
+                       "invalidURL",
+                       "httpFailure",
+                       "apiRequestFailed",
+                       "invalidResponse"
+                   ]
+    },
+    {
+        "name":  "NewAPIStoreError",
+        "values":  [
+                       "invalidName",
+                       "missingAPIKey",
+                       "invalidBaseURL"
+                   ]
+    },
+    {
+        "name":  "NotchState",
+        "values":  [
+                       "closed",
+                       "open"
+                   ]
+    },
+    {
+        "name":  "NotchViews",
+        "values":  [
+                       "home",
+                       "shelf",
+                       "timer",
+                       "stats",
+                       "llmUsage",
+                       "colorPicker",
+                       "notes",
+                       "clipboard",
+                       "terminal",
+                       "extensionExperience"
+                   ]
+    },
+    {
+        "name":  "NotesLayoutState",
+        "values":  [
+                       "list",
+                       "split",
+                       "editor"
+                   ]
+    },
+    {
+        "name":  "OnboardingStep",
+        "values":  [
+                       "welcome",
+                       "cameraPermission",
+                       "calendarPermission",
+                       "musicPermission",
+                       "profileSelection",
+                       "finished"
+                   ]
+    },
+    {
+        "name":  "OSDIconColorStyle",
+        "values":  [
+                       "White",
+                       "White (Transparent)",
+                       "Light Gray",
+                       "Dark Gray",
+                       "Black",
+                       "Black (Transparent)",
+                       "Auto",
+                       "Auto (Transparent)"
+                   ]
+    },
+    {
+        "name":  "OSDMaterial",
+        "values":  [
+                       "Frosted Glass",
+                       "Liquid Glass",
+                       "Solid Dark",
+                       "Solid Light",
+                       "Solid Auto"
+                   ]
+    },
+    {
+        "name":  "PanDirection",
+        "values":  [
+                       "left",
+                       "right",
+                       "up",
+                       "down"
+                   ]
+    },
+    {
+        "name":  "PinnedLyricContext",
+        "values":  [
+                       "current",
+                       "three",
+                       "five"
+                   ]
+    },
+    {
+        "name":  "PressEffect",
+        "values":  [
+                       "nudge",
+                       "wiggle"
+                   ]
+    },
+    {
+        "name":  "Priority",
+        "values":  [
+                       "high",
+                       "medium",
+                       "low"
+                   ]
+    },
+    {
+        "name":  "PrivacyIndicatorType",
+        "values":  [
+                       "camera",
+                       "microphone"
+                   ]
+    },
+    {
+        "name":  "ProcessRankingType",
+        "values":  [
+                       "cpu",
+                       "memory",
+                       "gpu",
+                       "network",
+                       "disk"
+                   ]
+    },
+    {
+        "name":  "ProgressBarStyle",
+        "values":  [
+                       "Hierarchical",
+                       "Gradient",
+                       "Segmented"
+                   ]
+    },
+    {
+        "name":  "ProgressColorMode",
+        "values":  [
+                       "volume",
+                       "battery"
+                   ]
+    },
+    {
+        "name":  "ProgressIndicatorType",
+        "values":  [
+                       "circle",
+                       "text"
+                   ]
+    },
+    {
+        "name":  "ProviderID",
+        "values":  [
+                       "claude",
+                       "codex",
+                       "cursor",
+                       "antigravity",
+                       "newAPI"
+                   ]
+    },
+    {
+        "name":  "ReaderError",
+        "values":  [
+                       "malformedVarint",
+                       "unexpectedEnd",
+                       "unsupportedWireType"
+                   ]
+    },
+    {
+        "name":  "Recording",
+        "values":  [
+                       "identifier",
+                       "value",
+                       "duration"
+                   ]
+    },
+    {
+        "name":  "RecordingControlMode",
+        "values":  [
+                       "indicatorOnly",
+                       "withStopButton"
+                   ]
+    },
+    {
+        "name":  "RecordingHoverStyle",
+        "values":  [
+                       "inline"
+                   ]
+    },
+    {
+        "name":  "RecordingHUDPresentation",
+        "values":  [
+                       "compact",
+                       "inline",
+                       "expanded"
+                   ]
+    },
+    {
+        "name":  "RecordingStopControlState",
+        "values":  [
+                       "unavailable",
+                       "ready",
+                       "sending",
+                       "failed"
+                   ]
+    },
+    {
+        "name":  "ReminderAlignmentOption",
+        "values":  [
+                       "leading",
+                       "center",
+                       "trailing"
+                   ]
+    },
+    {
+        "name":  "ReminderPresentationStyle",
+        "values":  [
+                       "Ring",
+                       "Digital",
+                       "Minutes"
+                   ]
+    },
+    {
+        "name":  "RepeatMode",
+        "values":  [
+                       "off",
+                       "one",
+                       "all"
+                   ]
+    },
+    {
+        "name":  "ResetsAt",
+        "values":  [
+                       "iso",
+                       "epochMs"
+                   ]
+    },
+    {
+        "name":  "RowKind",
+        "values":  [
+                       "weather",
+                       "focus",
+                       "calendar"
+                   ]
+    },
+    {
+        "name":  "RPCValue",
+        "values":  [
+                       "string",
+                       "int",
+                       "double",
+                       "bool",
+                       "null",
+                       "object",
+                       "array"
+                   ]
+    },
+    {
+        "name":  "ScreenAssistantDisplayMode",
+        "values":  [
+                       "popover",
+                       "panel"
+                   ]
+    },
+    {
+        "name":  "ScreenCaptureScope",
+        "values":  [
+                       "panelsOnly",
+                       "entireInterface"
+                   ]
+    },
+    {
+        "name":  "ScreenshotError",
+        "values":  [
+                       "captureFailed",
+                       "noImageInPasteboard",
+                       "saveFailed"
+                   ]
+    },
+    {
+        "name":  "ScreenshotType",
+        "values":  [
+                       "full",
+                       "window",
+                       "area"
+                   ]
+    },
+    {
+        "name":  "SensorMethod",
+        "values":  [
+                       "standard",
+                       "m1",
+                       "allFailed"
+                   ]
+    },
+    {
+        "name":  "SettingsEnum",
+        "values":  [
+                       "general",
+                       "about",
+                       "charge",
+                       "download",
+                       "mediaPlayback",
+                       "hud",
+                       "shelf",
+                       "extensions"
+                   ]
+    },
+    {
+        "name":  "SettingsTab",
+        "values":  [
+                       "general",
+                       "liveActivities",
+                       "appearance",
+                       "lockScreen",
+                       "media",
+                       "devices",
+                       "extensions",
+                       "timer",
+                       "calendar",
+                       "hudAndOSD",
+                       "battery",
+                       "stats",
+                       "clipboard",
+                       "screenAssistant",
+                       "colorPicker",
+                       "downloads",
+                       "shelf",
+                       "shortcuts",
+                       "notes",
+                       "terminal",
+                       "about"
+                   ]
+    },
+    {
+        "name":  "SettingsTabGroup",
+        "values":  [
+                       "core",
+                       "mediaAndDisplay",
+                       "system",
+                       "productivity",
+                       "utilities",
+                       "developer",
+                       "integrations",
+                       "info"
+                   ]
+    },
+    {
+        "name":  "ShelfItemKind",
+        "values":  [
+                       "file",
+                       "text",
+                       "link"
+                   ]
+    },
+    {
+        "name":  "SiriResponsivenessMode",
+        "values":  [
+                       "automatic",
+                       "highPerformance",
+                       "balanced",
+                       "powerSaver"
+                   ]
+    },
+    {
+        "name":  "SkipDirection",
+        "values":  [
+                       "backward",
+                       "forward"
+                   ]
+    },
+    {
+        "name":  "SliderColorEnum",
+        "values":  [
+                       "White",
+                       "Match album art",
+                       "Accent color"
+                   ]
+    },
+    {
+        "name":  "SMCDataType",
+        "values":  [
+                       "ui8 ",
+                       "ui16",
+                       "ui32",
+                       "sp1e",
+                       "sp3c",
+                       "sp5b",
+                       "sp5a",
+                       "spa5",
+                       "sp669",
+                       "sp78",
+                       "sp87",
+                       "sp96",
+                       "spb4",
+                       "spf0",
+                       "flt ",
+                       "fpe2",
+                       "fp2e",
+                       "{fds"
+                   ]
+    },
+    {
+        "name":  "SMCKeys",
+        "values":  [
+                       "kernelIndex",
+                       "readBytes",
+                       "writeBytes",
+                       "readIndex",
+                       "readKeyInfo",
+                       "readPLimit",
+                       "readVers"
+                   ]
+    },
+    {
+        "name":  "SneakContentType",
+        "values":  [
+                       "brightness",
+                       "volume",
+                       "backlight",
+                       "music",
+                       "mic",
+                       "battery",
+                       "download",
+                       "timer",
+                       "reminder",
+                       "recording",
+                       "doNotDisturb",
+                       "bluetoothAudio",
+                       "privacy",
+                       "lockScreen",
+                       "capsLock",
+                       "extensionLiveActivity",
+                       "activityID"
+                   ]
+    },
+    {
+        "name":  "SneakPeekStyle",
+        "values":  [
+                       "Default",
+                       "Inline"
+                   ]
+    },
+    {
+        "name":  "SoundType",
+        "values":  [
+                       "lock",
+                       "unlock"
+                   ]
+    },
+    {
+        "name":  "SpotifyAuthError",
+        "values":  [
+                       "invalidRequest",
+                       "invalidServerResponse",
+                       "invalidTokenResponse",
+                       "invalidSecretMaterial",
+                       "missingSecrets",
+                       "httpFailure",
+                       "serverError"
+                   ]
+    },
+    {
+        "name":  "SpotifyLibraryError",
+        "values":  [
+                       "missingClientID",
+                       "secureRandomUnavailable",
+                       "canceled",
+                       "missingAuthorizationCode",
+                       "authSessionFailed",
+                       "tokenExchangeFailed",
+                       "refreshTokenRevoked"
+                   ]
+    },
+    {
+        "name":  "SpotifyTokenAccount",
+        "values":  [
+                       "spotify-library-access-token",
+                       "spotify-library-refresh-token"
+                   ]
+    },
+    {
+        "name":  "State",
+        "values":  [
+                       "idle",
+                       "requesting"
+                   ]
+    },
+    {
+        "name":  "Step",
+        "values":  [
+                       "retry",
+                       "backOff",
+                       "giveUp"
+                   ]
+    },
+    {
+        "name":  "Style",
+        "values":  [
+                       "notch",
+                       "floating"
+                   ]
+    },
+    {
+        "name":  "SymbolEffectStyle",
+        "values":  [
+                       "replace",
+                       "replaceAndBounce",
+                       "wiggle"
+                   ]
+    },
+    {
+        "name":  "Tab",
+        "values":  [
+                       "Dynamic Island HUD",
+                       "Custom OSD",
+                       "Vertical Bar",
+                       "Circular"
+                   ]
+    },
+    {
+        "name":  "TempFileType",
+        "values":  [
+                       "data",
+                       "suggestedName",
+                       "text",
+                       "url"
+                   ]
+    },
+    {
+        "name":  "TerminalCursorStyleOption",
+        "values":  [
+                       "blinkBlock",
+                       "steadyBlock",
+                       "blinkUnderline",
+                       "steadyUnderline",
+                       "blinkBar",
+                       "steadyBar"
+                   ]
+    },
+    {
+        "name":  "ThirdPartyCalendarApp",
+        "values":  [
+                       "fantastical",
+                       "notionCalendar"
+                   ]
+    },
+    {
+        "name":  "ThirdPartyDDCProvider",
+        "values":  [
+                       "betterDisplay",
+                       "lunar"
+                   ]
+    },
+    {
+        "name":  "TimeLabelLayout",
+        "values":  [
+                       "stacked",
+                       "inline"
+                   ]
+    },
+    {
+        "name":  "TimerDisplayMode",
+        "values":  [
+                       "tab",
+                       "popover"
+                   ]
+    },
+    {
+        "name":  "TimerIconColorMode",
+        "values":  [
+                       "Adaptive",
+                       "Solid"
+                   ]
+    },
+    {
+        "name":  "TimerInputStyle",
+        "values":  [
+                       "Ruler",
+                       "Manual"
+                   ]
+    },
+    {
+        "name":  "TimerProgressStyle",
+        "values":  [
+                       "Bar",
+                       "Ring"
+                   ]
+    },
+    {
+        "name":  "TimerSource",
+        "values":  [
+                       "none",
+                       "manual",
+                       "external"
+                   ]
+    },
+    {
+        "name":  "TrailingLabel",
+        "values":  [
+                       "duration",
+                       "remaining"
+                   ]
+    },
+    {
+        "name":  "UpdateChannel",
+        "values":  [
+                       "stable",
+                       "beta",
+                       "alpha",
+                       "nightly",
+                       "dev"
+                   ]
+    },
+    {
+        "name":  "UpdatePhase",
+        "values":  [
+                       "idle",
+                       "checking",
+                       "updateFound",
+                       "downloading",
+                       "extracting",
+                       "readyToInstall",
+                       "installing",
+                       "installed",
+                       "upToDate",
+                       "error"
+                   ]
+    },
+    {
+        "name":  "UsageError",
+        "values":  [
+                       "notFound",
+                       "notConfigured"
+                   ]
+    },
+    {
+        "name":  "UsageResult",
+        "values":  [
+                       "loading",
+                       "success",
+                       "failure"
+                   ]
+    },
+    {
+        "name":  "VisibilityState",
+        "values":  [
+                       "hidden",
+                       "showing"
+                   ]
+    },
+    {
+        "name":  "WeatherProviderError",
+        "values":  [
+                       "invalidURL",
+                       "invalidResponse",
+                       "noData"
+                   ]
+    },
+    {
+        "name":  "WebcamError",
+        "values":  [
+                       "deviceUnavailable",
+                       "accessDenied",
+                       "configurationFailed"
+                   ]
+    },
+    {
+        "name":  "WebSocketMessageType",
+        "values":  [
+                       "PLAYER_INFO",
+                       "VIDEO_CHANGED",
+                       "PLAYER_STATE_CHANGED",
+                       "POSITION_CHANGED",
+                       "VOLUME_CHANGED",
+                       "REPEAT_CHANGED",
+                       "SHUFFLE_CHANGED"
+                   ]
+    },
+    {
+        "name":  "WiggleDirection",
+        "values":  [
+                       "clockwise",
+                       "counterClockwise"
+                   ]
+    },
+    {
+        "name":  "WindowHeightMode",
+        "values":  [
+                       "Match menubar height",
+                       "Match real notch height",
+                       "Custom height"
+                   ]
+    },
+    {
+        "name":  "YouTubeMusicError",
+        "values":  [
+                       "invalidURL",
+                       "invalidResponse",
+                       "httpError",
+                       "authenticationRequired",
+                       "webSocketNotConnected",
+                       "encodingFailed",
+                       "decodingFailed"
+                   ]
+    }
+]

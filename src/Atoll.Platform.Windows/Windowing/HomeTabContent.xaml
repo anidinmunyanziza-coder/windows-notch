@@ -1,0 +1,160 @@
+<UserControl x:Class="Atoll.Platform.Windows.Windowing.HomeTabContent"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:local="clr-namespace:Atoll.Platform.Windows.Windowing"
+             mc:Ignorable="d"
+             d:DesignWidth="420" d:DesignHeight="175">
+    <UserControl.Resources>
+        <local:ArtworkConverter x:Key="Artwork"/>
+        <local:IsNullToVisibilityConverter x:Key="NullToVis"/>
+        <local:PlayPauseGlyphConverter x:Key="PlayPauseGlyph"/>
+        <local:BoolToAccentBrushConverter x:Key="BoolToAccent"/>
+        <local:RepeatGlyphConverter x:Key="RepeatGlyph"/>
+        <local:RepeatBrushConverter x:Key="RepeatBrush"/>
+
+        <!-- 36x36 squircle control button (icon 18, medium) -->
+        <Style x:Key="ControlButton" TargetType="Button">
+            <Setter Property="Foreground" Value="#D9FFFFFF"/>
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="FontFamily" Value="Segoe MDL2 Assets"/>
+            <Setter Property="FontSize" Value="18"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="Bd" Background="{TemplateBinding Background}"
+                                CornerRadius="14" Width="36" Height="36">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Bd" Property="Background" Value="#1FFFFFFF"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="Bd" Property="Background" Value="#33FFFFFF"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- 54x54 play/pause button (icon 26, semibold) -->
+        <Style x:Key="PlayButton" TargetType="Button" BasedOn="{StaticResource ControlButton}">
+            <Setter Property="FontSize" Value="26"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Foreground" Value="#FFFFFF"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="Bd" Background="{TemplateBinding Background}"
+                                CornerRadius="22" Width="54" Height="54">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Bd" Property="Background" Value="#1FFFFFFF"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="Bd" Property="Background" Value="#33FFFFFF"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </UserControl.Resources>
+
+    <!-- Vertically-centred stack: header → progress → controls -->
+    <StackPanel x:Name="MediaPanel" Margin="12 10" VerticalAlignment="Center">
+
+        <!-- Header: album art 50, title/artist, now-playing bars -->
+        <Grid Height="50">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+
+            <!-- Album art (open: radius 13) — matched-geometry target. Dims and
+                 shrinks while paused, like the original. -->
+            <Grid x:Name="ArtHost" Grid.Column="0" Width="50" Height="50" VerticalAlignment="Center">
+                <Grid x:Name="ArtVisual" RenderTransformOrigin="0.5,0.5">
+                    <Grid.RenderTransform>
+                        <ScaleTransform x:Name="ArtScale" ScaleX="1" ScaleY="1"/>
+                    </Grid.RenderTransform>
+                    <Border CornerRadius="13" Background="#1C1C1E"/>
+                    <TextBlock Text="&#xE8D6;" FontFamily="Segoe MDL2 Assets" FontSize="20"
+                               Foreground="#55FFFFFF" HorizontalAlignment="Center" VerticalAlignment="Center"
+                               Visibility="{Binding MediaState.ArtworkBytes, Converter={StaticResource NullToVis}}"/>
+                    <Border x:Name="ArtImage" CornerRadius="13">
+                        <Border.Background>
+                            <ImageBrush ImageSource="{Binding MediaState.ArtworkBytes, Converter={StaticResource Artwork}}"
+                                        Stretch="UniformToFill"/>
+                        </Border.Background>
+                    </Border>
+                </Grid>
+            </Grid>
+
+            <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="10 0 10 0">
+                <TextBlock Text="{Binding MediaState.Title, TargetNullValue='No track', FallbackValue='No track'}"
+                           FontSize="12" FontWeight="SemiBold" Foreground="#FFFFFF"
+                           TextTrimming="CharacterEllipsis" TextWrapping="NoWrap"/>
+                <TextBlock Text="{Binding MediaState.Artist, TargetNullValue='', FallbackValue=''}"
+                           FontSize="10" Foreground="#9A9A9E" Margin="0 1 0 0"
+                           TextTrimming="CharacterEllipsis" TextWrapping="NoWrap"/>
+            </StackPanel>
+
+            <!-- Spectrum (open) — matched-geometry target of the closed pill's bars -->
+            <Grid x:Name="SpectrumHost" Grid.Column="2" VerticalAlignment="Center" Margin="0 0 2 0">
+                <local:SpectrumBars BarCount="4" BarHeight="14"/>
+            </Grid>
+        </Grid>
+
+        <!-- Progress bar with inline elapsed / remaining -->
+        <Grid Margin="0 6 0 0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+            <TextBlock Grid.Column="0" Text="{Binding MediaState.PositionText, TargetNullValue='0:00', FallbackValue='0:00'}"
+                       FontSize="10" Foreground="#8A8A8E" Margin="0 0 8 0" VerticalAlignment="Center"/>
+            <Border Grid.Column="1" x:Name="ProgressTrack" Height="7" CornerRadius="3.5"
+                    Background="#3A3A3C" VerticalAlignment="Center">
+                <Border HorizontalAlignment="Left" CornerRadius="3.5" Background="#FFFFFF"
+                        RenderTransformOrigin="0,0.5"
+                        Width="{Binding ActualWidth, ElementName=ProgressTrack}">
+                    <Border.RenderTransform>
+                        <ScaleTransform ScaleX="{Binding MediaState.Progress, FallbackValue=0}"/>
+                    </Border.RenderTransform>
+                </Border>
+            </Border>
+            <TextBlock Grid.Column="2" Text="{Binding MediaState.RemainingText, TargetNullValue='-0:00', FallbackValue='-0:00'}"
+                       FontSize="10" Foreground="#8A8A8E" Margin="8 0 0 0" VerticalAlignment="Center"/>
+        </Grid>
+
+        <!-- Transport controls: shuffle, prev, play/pause, next, repeat -->
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0 4 0 0">
+            <Button Style="{StaticResource ControlButton}" FontSize="15" Content="&#xE8B1;"
+                    ToolTip="Shuffle" Click="OnShuffle"
+                    Foreground="{Binding MediaState.IsShuffled, Converter={StaticResource BoolToAccent}}"/>
+            <Button Style="{StaticResource ControlButton}" Content="&#xE892;"
+                    ToolTip="Previous" Click="OnPrevious" Margin="10 0 0 0"/>
+            <Button Style="{StaticResource PlayButton}" Margin="10 0 10 0"
+                    Content="{Binding MediaState.IsPlaying, Converter={StaticResource PlayPauseGlyph}, FallbackValue='&#xE768;'}"
+                    ToolTip="Play/Pause" Click="OnPlayPause"/>
+            <Button Style="{StaticResource ControlButton}" Content="&#xE893;"
+                    ToolTip="Next" Click="OnNext" Margin="0 0 10 0"/>
+            <Button Style="{StaticResource ControlButton}" FontSize="15"
+                    Content="{Binding MediaState.RepeatMode, Converter={StaticResource RepeatGlyph}, FallbackValue='&#xE8EE;'}"
+                    Foreground="{Binding MediaState.RepeatMode, Converter={StaticResource RepeatBrush}}"
+                    ToolTip="Repeat" Click="OnRepeat"/>
+        </StackPanel>
+
+        <!-- Audio-reactive visualizer -->
+        <local:AudioVisualizer Height="26" Margin="0 7 0 0"/>
+    </StackPanel>
+</UserControl>

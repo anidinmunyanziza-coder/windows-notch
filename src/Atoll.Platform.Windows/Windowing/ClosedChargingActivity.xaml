@@ -1,0 +1,20 @@
+<UserControl x:Class="Atoll.Platform.Windows.Windowing.ClosedChargingActivity"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             mc:Ignorable="d"
+             d:DesignWidth="220" d:DesignHeight="32">
+    <Grid Margin="12 0 14 0">
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
+            <!-- Lightning bolt (drawn, never a font glyph) -->
+            <Path Data="M 11,0 L 4,10 L 9,10 L 7,18 L 15,7 L 10,7 Z"
+                  Fill="#30D158" Width="18" Height="18" Stretch="Uniform"
+                  VerticalAlignment="Center" Margin="0 0 9 0"/>
+            <TextBlock Text="Charging" FontSize="13.5" FontWeight="SemiBold"
+                       Foreground="#FFFFFF" VerticalAlignment="Center"/>
+            <TextBlock x:Name="PercentText" FontSize="12.5" Foreground="#9A9A9E"
+                       VerticalAlignment="Center" Margin="8 0 0 0"/>
+        </StackPanel>
+    </Grid>
+</UserControl>

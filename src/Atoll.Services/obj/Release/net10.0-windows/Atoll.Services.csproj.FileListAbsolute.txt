@@ -1,0 +1,17 @@
+C:\Users\Anidin\projects\atoll-windows\src\Atoll.Services\bin\Release\net10.0-windows\Atoll.Services.deps.json
+C:\Users\Anidin\projects\atoll-windows\src\Atoll.Services\bin\Release\net10.0-windows\Atoll.Services.dll
+C:\Users\Anidin\projects\atoll-windows\src\Atoll.Services\bin\Release\net10.0-windows\Atoll.Services.pdb
+C:\Users\Anidin\projects\atoll-windows\src\Atoll.Services\bin\Release\net10.0-windows\Atoll.Core.dll
+C:\Users\Anidin\projects\atoll-windows\src\Atoll.Services\bin\Release\net10.0-windows\Atoll.Platform.Windows.dll
+C:\Users\Anidin\projects\atoll-windows\src\Atoll.Services\bin\Release\net10.0-windows\Atoll.Core.pdb
+C:\Users\Anidin\projects\atoll-windows\src\Atoll.Services\bin\Release\net10.0-windows\Atoll.Platform.Windows.pdb
+C:\Users\Anidin\projects\atoll-windows\src\Atoll.Services\obj\Release\net10.0-windows\Atoll.Services.csproj.AssemblyReference.cache
+C:\Users\Anidin\projects\atoll-windows\src\Atoll.Services\obj\Release\net10.0-windows\Atoll.Services.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\Anidin\projects\atoll-windows\src\Atoll.Services\obj\Release\net10.0-windows\Atoll.Services.AssemblyInfoInputs.cache
+C:\Users\Anidin\projects\atoll-windows\src\Atoll.Services\obj\Release\net10.0-windows\Atoll.Services.AssemblyInfo.cs
+C:\Users\Anidin\projects\atoll-windows\src\Atoll.Services\obj\Release\net10.0-windows\Atoll.Services.csproj.CoreCompileInputs.cache
+C:\Users\Anidin\projects\atoll-windows\src\Atoll.Services\obj\Release\net10.0-windows\Atoll.Se.C13E823A.Up2Date
+C:\Users\Anidin\projects\atoll-windows\src\Atoll.Services\obj\Release\net10.0-windows\Atoll.Services.dll
+C:\Users\Anidin\projects\atoll-windows\src\Atoll.Services\obj\Release\net10.0-windows\refint\Atoll.Services.dll
+C:\Users\Anidin\projects\atoll-windows\src\Atoll.Services\obj\Release\net10.0-windows\Atoll.Services.pdb
+C:\Users\Anidin\projects\atoll-windows\src\Atoll.Services\obj\Release\net10.0-windows\ref\Atoll.Services.dll

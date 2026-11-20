@@ -1,0 +1,48 @@
+<UserControl x:Class="Atoll.Platform.Windows.Windowing.ClosedMediaActivity"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:local="clr-namespace:Atoll.Platform.Windows.Windowing"
+             mc:Ignorable="d"
+             d:DesignWidth="320" d:DesignHeight="32">
+    <UserControl.Resources>
+        <local:ArtworkConverter x:Key="Artwork"/>
+        <local:IsNullToVisibilityConverter x:Key="NullToVis"/>
+    </UserControl.Resources>
+
+    <Grid Margin="6 0 10 0">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto"/>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="Auto"/>
+        </Grid.ColumnDefinitions>
+
+        <!-- Album art (closed: 20x20, radius 4) — matched-geometry source -->
+        <Grid x:Name="ArtHost" Grid.Column="0" Width="20" Height="20" VerticalAlignment="Center">
+            <Grid x:Name="ArtVisual">
+                <Border CornerRadius="4" Background="#2C2C2E"/>
+                <TextBlock Text="&#xE8D6;" FontFamily="Segoe MDL2 Assets" FontSize="11"
+                           Foreground="#66FFFFFF" HorizontalAlignment="Center" VerticalAlignment="Center"
+                           Visibility="{Binding MediaState.ArtworkBytes, Converter={StaticResource NullToVis}}"/>
+                <Border CornerRadius="4">
+                    <Border.Background>
+                        <ImageBrush ImageSource="{Binding MediaState.ArtworkBytes, Converter={StaticResource Artwork}}"
+                                    Stretch="UniformToFill"/>
+                    </Border.Background>
+                </Border>
+            </Grid>
+        </Grid>
+
+        <!-- Track title -->
+        <TextBlock Grid.Column="1" Text="{Binding MediaState.Title, TargetNullValue='', FallbackValue=''}"
+                   FontSize="11.5" FontWeight="Medium" Foreground="#F2F2F2"
+                   VerticalAlignment="Center" Margin="10 0 10 0"
+                   TextTrimming="CharacterEllipsis" TextWrapping="NoWrap"/>
+
+        <!-- Spectrum (closed: 12 tall) — matched-geometry source -->
+        <Grid x:Name="SpectrumHost" Grid.Column="2" VerticalAlignment="Center">
+            <local:SpectrumBars x:Name="Spectrum" BarCount="4" BarHeight="12"/>
+        </Grid>
+    </Grid>
+</UserControl>

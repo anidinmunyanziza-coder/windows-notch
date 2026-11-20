@@ -1,0 +1,89 @@
+<UserControl x:Class="Atoll.Platform.Windows.Windowing.TimerTabContent"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             mc:Ignorable="d"
+             d:DesignWidth="420" d:DesignHeight="175">
+    <UserControl.Resources>
+        <!-- Preset chip -->
+        <Style x:Key="Chip" TargetType="Button">
+            <Setter Property="Foreground" Value="#FFFFFF"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="FontSize" Value="12.5"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="Bd" Background="#1FFFFFFF" CornerRadius="14" Padding="14 7">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Bd" Property="Background" Value="#33FFFFFF"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Round transport button for run controls -->
+        <Style x:Key="RoundButton" TargetType="Button">
+            <Setter Property="Foreground" Value="#FFFFFF"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="FontFamily" Value="Segoe MDL2 Assets"/>
+            <Setter Property="FontSize" Value="17"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="Bd" Background="#1FFFFFFF" CornerRadius="22" Width="44" Height="44">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Bd" Property="Background" Value="#33FFFFFF"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </UserControl.Resources>
+
+    <Grid Margin="12 6">
+        <!-- Idle: preset chips -->
+        <StackPanel x:Name="IdlePanel" VerticalAlignment="Center" HorizontalAlignment="Center">
+            <TextBlock Text="Set a timer" FontSize="14" FontWeight="SemiBold" Foreground="#FFFFFF"
+                       HorizontalAlignment="Center" Margin="0 0 0 14"/>
+            <WrapPanel x:Name="PresetPanel" HorizontalAlignment="Center" MaxWidth="360"/>
+        </StackPanel>
+
+        <!-- Running/paused: ring + time + controls -->
+        <Grid x:Name="RunPanel" Visibility="Collapsed">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+
+            <Grid Grid.Column="0" Width="118" Height="118" VerticalAlignment="Center">
+                <Ellipse Width="112" Height="112" Stroke="#3A3A3C" StrokeThickness="7"/>
+                <Path x:Name="ProgressArc" Stroke="#0A84FF" StrokeThickness="7" StrokeStartLineCap="Round"
+                      StrokeEndLineCap="Round"/>
+                <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
+                    <TextBlock x:Name="TimeText" Text="0:00" FontSize="26" FontWeight="SemiBold"
+                               Foreground="#FFFFFF" HorizontalAlignment="Center"/>
+                    <TextBlock x:Name="NameText" Text="" FontSize="10.5" Foreground="#8A8A8E"
+                               HorizontalAlignment="Center" Margin="0 1 0 0"/>
+                </StackPanel>
+            </Grid>
+
+            <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Center"
+                        VerticalAlignment="Center">
+                <Button x:Name="PauseButton" Style="{StaticResource RoundButton}" Content="&#xE769;"
+                        ToolTip="Pause/Resume" Click="OnPause" Margin="0 0 14 0"/>
+                <Button x:Name="ResetButton" Style="{StaticResource RoundButton}" Content="&#xE711;"
+                        ToolTip="Reset" Click="OnReset"/>
+            </StackPanel>
+        </Grid>
+    </Grid>
+</UserControl>

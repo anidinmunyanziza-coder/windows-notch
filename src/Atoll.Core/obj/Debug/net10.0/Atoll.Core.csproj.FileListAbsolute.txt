@@ -1,0 +1,11 @@
+C:\Users\Anidin\projects\atoll-windows\src\Atoll.Core\bin\Debug\net10.0\Atoll.Core.deps.json
+C:\Users\Anidin\projects\atoll-windows\src\Atoll.Core\bin\Debug\net10.0\Atoll.Core.dll
+C:\Users\Anidin\projects\atoll-windows\src\Atoll.Core\bin\Debug\net10.0\Atoll.Core.pdb
+C:\Users\Anidin\projects\atoll-windows\src\Atoll.Core\obj\Debug\net10.0\Atoll.Core.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\Anidin\projects\atoll-windows\src\Atoll.Core\obj\Debug\net10.0\Atoll.Core.AssemblyInfoInputs.cache
+C:\Users\Anidin\projects\atoll-windows\src\Atoll.Core\obj\Debug\net10.0\Atoll.Core.AssemblyInfo.cs
+C:\Users\Anidin\projects\atoll-windows\src\Atoll.Core\obj\Debug\net10.0\Atoll.Core.csproj.CoreCompileInputs.cache
+C:\Users\Anidin\projects\atoll-windows\src\Atoll.Core\obj\Debug\net10.0\Atoll.Core.dll
+C:\Users\Anidin\projects\atoll-windows\src\Atoll.Core\obj\Debug\net10.0\refint\Atoll.Core.dll
+C:\Users\Anidin\projects\atoll-windows\src\Atoll.Core\obj\Debug\net10.0\Atoll.Core.pdb
+C:\Users\Anidin\projects\atoll-windows\src\Atoll.Core\obj\Debug\net10.0\ref\Atoll.Core.dll

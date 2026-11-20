@@ -1,0 +1,46 @@
+<UserControl x:Class="Atoll.Platform.Windows.Windowing.StatsTabContent"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             mc:Ignorable="d"
+             d:DesignWidth="420" d:DesignHeight="175">
+    <Grid Margin="12 10">
+        <!-- One metric card per enabled graph; built/sized in code-behind. -->
+        <UniformGrid x:Name="CardsHost" Rows="1" HorizontalAlignment="Stretch"
+                     VerticalAlignment="Center"/>
+        <TextBlock x:Name="EmptyNote" Visibility="Collapsed"
+                   Text="No stats graphs enabled. Turn them on in Settings → Stats Feature."
+                   FontSize="11" Foreground="#6E6E73" TextWrapping="Wrap"
+                   HorizontalAlignment="Center" VerticalAlignment="Center" TextAlignment="Center"/>
+
+        <!-- Detail view for a tapped metric -->
+        <Grid x:Name="DetailView" Visibility="Collapsed">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+
+            <StackPanel Grid.Row="0" Orientation="Horizontal" VerticalAlignment="Center">
+                <Button x:Name="BackButton" Content="&#xE76B;" FontFamily="Segoe MDL2 Assets"
+                        FontSize="13" Foreground="#C8C8CC" Background="Transparent" BorderThickness="0"
+                        Width="26" Height="24" Cursor="Hand" Click="OnBack"/>
+                <Ellipse x:Name="DetailDot" Width="8" Height="8" Margin="4 0 7 0" VerticalAlignment="Center"/>
+                <TextBlock x:Name="DetailName" FontSize="13" Foreground="#E6E6E6" VerticalAlignment="Center"/>
+            </StackPanel>
+
+            <TextBlock Grid.Row="1" x:Name="DetailValue" Text="—" FontSize="40" FontWeight="Light"
+                       Foreground="#FFFFFF" Margin="4 2 0 0"/>
+
+            <Grid Grid.Row="2" x:Name="DetailSparkHost" Margin="4 6 4 6" ClipToBounds="True">
+                <Polygon x:Name="DetailFill" IsHitTestVisible="False"/>
+                <Polyline x:Name="DetailLine" StrokeThickness="2" StrokeLineJoin="Round" IsHitTestVisible="False"/>
+            </Grid>
+
+            <TextBlock Grid.Row="3" x:Name="DetailInfo" FontSize="11" Foreground="#8A8A8E"
+                       TextWrapping="Wrap" Margin="4 0 4 0"/>
+        </Grid>
+    </Grid>
+</UserControl>

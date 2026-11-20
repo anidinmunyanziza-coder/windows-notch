@@ -1,0 +1,51 @@
+<UserControl x:Class="Atoll.Platform.Windows.Windowing.TerminalTabContent"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             mc:Ignorable="d"
+             d:DesignWidth="420" d:DesignHeight="175">
+    <Grid Margin="14 4 14 10">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!-- Header -->
+        <Grid Grid.Row="0" Margin="0 0 0 6">
+            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                <TextBlock Text="&#xE756;" FontFamily="Segoe MDL2 Assets" FontSize="13"
+                           Foreground="#C8C8CC" VerticalAlignment="Center" Margin="0 0 7 0"/>
+                <TextBlock Text="Terminal" FontSize="14" FontWeight="SemiBold" Foreground="#FFFFFF"
+                           VerticalAlignment="Center"/>
+            </StackPanel>
+            <Button x:Name="ClearButton" HorizontalAlignment="Right" VerticalAlignment="Center"
+                    Cursor="Hand" ToolTip="Clear" Click="OnClear"
+                    Width="24" Height="22" Background="Transparent" BorderThickness="0"
+                    Foreground="#9A9A9E" FontFamily="Segoe MDL2 Assets" FontSize="13" Content="&#xE7A7;"/>
+        </Grid>
+
+        <!-- Output -->
+        <Border Grid.Row="1" Background="#121214" CornerRadius="8" Padding="8 6">
+            <ScrollViewer x:Name="OutputScroller" VerticalScrollBarVisibility="Hidden">
+                <TextBlock x:Name="OutputText" FontFamily="Cascadia Code, Consolas, Courier New"
+                           FontSize="11.5" Foreground="#D6D6D6" TextWrapping="Wrap"
+                           Text="Type a command and press Enter."/>
+            </ScrollViewer>
+        </Border>
+
+        <!-- Input -->
+        <Grid Grid.Row="2" Margin="0 6 0 0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+            <TextBlock Grid.Column="0" Text="&#x203A;" FontFamily="Cascadia Code, Consolas"
+                       FontSize="15" Foreground="#30D158" VerticalAlignment="Center" Margin="0 0 6 0"/>
+            <TextBox Grid.Column="1" x:Name="InputBox" Background="Transparent" BorderThickness="0"
+                     Foreground="#FFFFFF" CaretBrush="#30D158" FontFamily="Cascadia Code, Consolas"
+                     FontSize="12.5" VerticalAlignment="Center" KeyDown="OnInputKeyDown"/>
+        </Grid>
+    </Grid>
+</UserControl>

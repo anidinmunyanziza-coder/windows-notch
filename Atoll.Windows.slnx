@@ -1,0 +1,12 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/Atoll.App/Atoll.App.csproj" />
+    <Project Path="src/Atoll.Core/Atoll.Core.csproj" />
+    <Project Path="src/Atoll.Platform.Windows/Atoll.Platform.Windows.csproj" />
+    <Project Path="src/Atoll.Services/Atoll.Services.csproj" />
+    <Project Path="src/Atoll.UI/Atoll.UI.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/Atoll.UnitTests/Atoll.UnitTests.csproj" />
+  </Folder>
+</Solution>
