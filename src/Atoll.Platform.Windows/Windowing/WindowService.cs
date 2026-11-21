@@ -106,6 +106,16 @@ public sealed class WindowService : IWindowService
         }
     }
 
+    /// <summary>Where the notch on a display sits (for the assistant's droplet);
+    /// falls back to the first notch when the display isn't known.</summary>
+    public NotchAnchor? GetNotchAnchor(string? displayId)
+    {
+        NotchWindow? window = null;
+        if (displayId is not null) _windowsByDisplay.TryGetValue(displayId, out window);
+        window ??= _windowsByDisplay.Values.FirstOrDefault();
+        return window?.GetAnchor();
+    }
+
     private void ForEachWindow(Action<NotchWindow> action)
     {
         lock (_lock)

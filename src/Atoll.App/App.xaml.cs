@@ -70,6 +70,8 @@ public partial class App : Application
                 services.AddSingleton<IShelfService, Atoll.Services.Productivity.ShelfService>();
                 services.AddSingleton<INotesService>(_ => new Atoll.Services.Productivity.NotesService());
                 services.AddSingleton<Atoll.Core.Media.ILyricsService>(_ => new Atoll.Services.Media.LyricsService());
+                services.AddSingleton<IAssistantService>(sp =>
+                    new Atoll.Services.Assistant.OpenRouterAssistantService(sp.GetRequiredService<ISettingsService>()));
                 services.AddSingleton<Atoll.Core.Usage.ILlmUsageService>(sp =>
                     new Atoll.Services.Usage.LlmUsageService(sp.GetRequiredService<ISettingsService>()));
                 services.AddSingleton<IWindowService, WindowService>();
@@ -343,6 +345,26 @@ public partial class App : Application
                     shell.CancelNotchAutoClose();
                     shell.SwitchTab(NotchView.Clipboard);
                 }
+            });
+
+        // AI assistant: Ctrl+Shift+Space drops the assistant pill out of the
+        // notch on the display under the cursor (press again or Esc to dismiss).
+        Atoll.Platform.Windows.Windowing.AssistantWindow? assistant = null;
+        Register(
+            new Shortcut
+            {
+                Name = "assistant",
+                Key = Key.Space,
+                Modifiers = ModifierKeys.Control | ModifierKeys.Shift,
+                Description = "AI Assistant",
+            },
+            () =>
+            {
+                if (!Enabled() || !settings.Get("enableAssistant", true)) return;
+                assistant ??= new Atoll.Platform.Windows.Windowing.AssistantWindow(
+                    services.GetRequiredService<IAssistantService>());
+                var windows = services.GetRequiredService<IWindowService>() as WindowService;
+                assistant.Toggle(windows?.GetNotchAnchor(DisplayUnderCursor(services)));
             });
 
         // startDemoTimer: ⌘⇧T on macOS → Ctrl+Shift+T.

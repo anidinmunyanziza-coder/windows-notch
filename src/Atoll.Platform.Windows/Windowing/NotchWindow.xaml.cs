@@ -268,6 +268,7 @@ public partial class NotchWindow : Window
         _logger = logger;
         DataContext = viewModel;
         InitializeComponent();
+        ReadDockSettings();
 
         // The window is a fixed, screen-centred container big enough to hold the
         // open notch plus shadow room; only the Surface Border grows/shrinks.
@@ -297,7 +298,7 @@ public partial class NotchWindow : Window
         _hoverTimer.Tick += (_, _) =>
         {
             _hoverTimer.Stop();
-            if (_isHovering && _shell.GetSetting("openNotchOnHover", true))
+            if (_isHovering && !_dragArmed && !_dragging && _shell.GetSetting("openNotchOnHover", true))
                 OpenNotch();
         };
 
@@ -511,7 +512,7 @@ public partial class NotchWindow : Window
     /// <summary>Springs the open notch to the current tab's height, if it changed.</summary>
     private void AnimateOpenHeight()
     {
-        if (_vm.State != NotchState.Open || _hwnd == IntPtr.Zero) return;
+        if (_vm.State != NotchState.Open || _hwnd == IntPtr.Zero || _dragging) return;
         var h = EffectiveOpenHeight;
         if (Math.Abs(h - _requestedOpenHeight) < 0.5) return;
         _requestedOpenHeight = h;
@@ -545,8 +546,9 @@ public partial class NotchWindow : Window
     /// <summary>Springs the closed pill between its idle and media widths.</summary>
     private void AnimateClosedWidth()
     {
-        if (_vm.State == NotchState.Open || _hwnd == IntPtr.Zero) return;
-        RunSpringAnimation(EffectiveClosedWidth, _vm.ClosedHeight, ClosedRadii,
+        if (_vm.State == NotchState.Open || _hwnd == IntPtr.Zero || _dragging) return;
+        var size = ClosedSurfaceSize;
+        RunSpringAnimation(size.W, size.H, ClosedRadii,
             DesignTokens.OpenSpringResponse, DesignTokens.OpenSpringDamping);
     }
 
@@ -582,6 +584,8 @@ public partial class NotchWindow : Window
             };
 
             // Blur-replace the pill's contents in when it actually changes.
+            OrientClosedContent();
+
             var hudKindChanged = prevChild is ClosedHudActivity oldHud
                 && ContentHost.Child is ClosedHudActivity newHud && oldHud.Type != newHud.Type;
             var privacyChanged = prevChild is ClosedPrivacyActivity oldP
@@ -970,6 +974,7 @@ public partial class NotchWindow : Window
             _logger?.LogDebug($"Ignoring phantom mouse enter (cursor={DescribeCursor()})");
             return;
         }
+        if (_dragArmed || _dragging) return;
 
         _closeTimer.Stop();
         _isHovering = true;
@@ -1097,11 +1102,12 @@ public partial class NotchWindow : Window
         _closeTimer.Stop();
         _shell.CancelNotchAutoClose();
 
-        // A click on the closed pill opens it. While open, a click that reaches
-        // the window (i.e. not on an interactive control) must NOT close the
+        // A press on the closed pill arms drag-to-dock; releasing without moving
+        // is the click that opens it (see NotchWindow.Dock). While open, a click
+        // that reaches the window (not an interactive control) must NOT close the
         // notch â€” otherwise interacting with a tab like the calendar dismisses
         // it. The open notch closes on hover-leave instead.
-        if (_vm.State != NotchState.Open)
+        if (_vm.State != NotchState.Open && !TryArmDrag(e))
             OpenNotch();
     }
 
@@ -1275,7 +1281,7 @@ public partial class NotchWindow : Window
     {
         _currentTopR = topR;
         _currentBottomR = botR;
-        var geo = BuildNotchGeometry(w, h, topR, botR);
+        var geo = BuildDockedGeometry(w, h, topR, botR, _freeBlend);
         NotchBg.Data = geo;
         ContentHost.Clip = geo;
         MorphLayer.Clip = geo;
@@ -1283,6 +1289,7 @@ public partial class NotchWindow : Window
 
     private void AnimateStateChange()
     {
+        if (_dragging) return;
         if (_hwnd == IntPtr.Zero)
         {
             UpdateContent();
@@ -1307,8 +1314,9 @@ public partial class NotchWindow : Window
             _isHovering = false;
         }
 
-        var targetW = open ? _vm.OpenWidth : EffectiveClosedWidth;
-        var targetH = open ? EffectiveOpenHeight : _vm.ClosedHeight;
+        var closedSize = ClosedSurfaceSize;
+        var targetW = open ? _vm.OpenWidth : closedSize.W;
+        var targetH = open ? EffectiveOpenHeight : closedSize.H;
         if (open) _requestedOpenHeight = targetH;
 
         var response = open ? DesignTokens.OpenSpringResponse : DesignTokens.CloseSpringResponse;
@@ -1423,17 +1431,15 @@ public partial class NotchWindow : Window
 
     internal void PositionOnScreen()
     {
-        if (_hwnd == IntPtr.Zero || _isClosing) return;
+        if (_hwnd == IntPtr.Zero || _isClosing || _dragging) return;
 
         StopAnimations();
 
         var open = _vm.State == NotchState.Open;
 
-        // Fixed, screen-centred window sized for the open notch plus shadow room.
-        var winW = WindowWidth;
-        var winH = MaxOpenHeight + ShadowPad;
-        var left = DipWorkLeft + (DipWorkWidth - winW) / 2.0;
-        var top = DipWorkTop;
+        // Fixed window on the docked edge, sized for the open notch plus shadow room.
+        var (left, top, winW, winH) = DockedWindowRect();
+        ApplyDockAlignment();
 
         Width = winW;
         Height = winH;
@@ -1441,8 +1447,9 @@ public partial class NotchWindow : Window
         Top = top;
 
         // The Surface (centred, top-aligned) carries the current notch size.
-        var sw = open ? _vm.OpenWidth : EffectiveClosedWidth;
-        var sh = open ? EffectiveOpenHeight : _vm.ClosedHeight;
+        var closedSize = ClosedSurfaceSize;
+        var sw = open ? _vm.OpenWidth : closedSize.W;
+        var sh = open ? EffectiveOpenHeight : closedSize.H;
         var radii = open ? OpenRadii : ClosedRadii;
         Surface.Width = sw;
         Surface.Height = sh;

@@ -24,4 +24,15 @@ public partial class ClosedMediaActivity : UserControl
     public FrameworkElement ArtMorphVisual => ArtVisual;
 
     public FrameworkElement SpectrumMorphHost => SpectrumHost;
+
+    /// <summary>When the pill is turned 90° for a side-docked notch, keep the art
+    /// and the waveform upright (the title reads down the edge like a spine).</summary>
+    public void SetIconsUpright(double counterAngle)
+    {
+        foreach (var el in new FrameworkElement[] { ArtHost, SpectrumHost })
+        {
+            el.RenderTransformOrigin = new Point(0.5, 0.5);
+            el.RenderTransform = counterAngle == 0 ? System.Windows.Media.Transform.Identity : new System.Windows.Media.RotateTransform(counterAngle);
+        }
+    }
 }

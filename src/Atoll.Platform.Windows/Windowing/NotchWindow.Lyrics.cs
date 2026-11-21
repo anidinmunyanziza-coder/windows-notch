@@ -131,6 +131,7 @@ public partial class NotchWindow
         }
 
         var show = _vm.State != NotchState.Open
+                   && _dock == NotchDock.Top && !_dragging
                    && !_hiddenForFullscreen
                    && media is { IsPlaying: true, IsAdvertisement: false }
                    && lyrics.Availability == LyricsAvailability.Timed
