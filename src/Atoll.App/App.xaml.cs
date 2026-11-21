@@ -68,6 +68,7 @@ public partial class App : Application
                 services.AddSingleton<ITimerService, TimerService>();
                 services.AddSingleton<IClipboardService, ClipboardService>();
                 services.AddSingleton<IShelfService, Atoll.Services.Productivity.ShelfService>();
+                services.AddSingleton<INotesService>(_ => new Atoll.Services.Productivity.NotesService());
                 services.AddSingleton<IWindowService, WindowService>();
                 services.AddSingleton<IShortcutService, ShortcutService>();
                 services.AddSingleton<ITrayService>(sp =>
@@ -83,6 +84,7 @@ public partial class App : Application
                         sp.GetRequiredService<ITimerService>(),
                         sp.GetRequiredService<IClipboardService>(),
                         sp.GetRequiredService<IShelfService>(),
+                        sp.GetRequiredService<INotesService>(),
                         sp.GetRequiredService<ILogger>());
                     if (windowService is WindowService ws)
                         ws.Shell = shell;
@@ -112,6 +114,13 @@ public partial class App : Application
         var clipboardService = _host.Services.GetRequiredService<IClipboardService>();
         var settingsService = _host.Services.GetRequiredService<ISettingsService>();
         ConfigureClipboard(clipboardService, settingsService);
+
+        // These tabs default to off in the original but are on in this port; store
+        // that explicitly (unless the user chose) so the settings window, which
+        // falls back to the original's defaults, shows what the notch shows.
+        foreach (var key in new[] { "enableStatsFeature", "enableTerminalFeature", "enableNotes" })
+            if (!settingsService.Contains(key))
+                settingsService.Set(key, true);
 
         var shell = _host.Services.GetRequiredService<ShellViewModel>();
         shell.OpenSettingsRequested += () => ShowSettingsWindow(_host!.Services);

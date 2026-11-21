@@ -46,6 +46,29 @@ public static class NativeMethods
     // Power status change (charger plugged/unplugged, battery level).
     public const int WM_POWERBROADCAST = 0x0218;
     public const int PBT_APMPOWERSTATUSCHANGE = 0x000A;
+    public const int PBT_POWERSETTINGCHANGE = 0x8013;
+
+    /// <summary>GUID_VIDEO_CURRENT_MONITOR_BRIGHTNESS — the built-in panel's
+    /// brightness (0–100), delivered as a power-setting change whenever it moves.</summary>
+    public static readonly Guid GUID_VIDEO_CURRENT_MONITOR_BRIGHTNESS =
+        new(0x8ffee2c6, 0x2d01, 0x46be, 0xad, 0xb9, 0x39, 0x8a, 0xdd, 0xc5, 0xb4, 0xff);
+
+    public const int DEVICE_NOTIFY_WINDOW_HANDLE = 0;
+
+    [DllImport("user32.dll", SetLastError = true)]
+    public static extern IntPtr RegisterPowerSettingNotification(IntPtr hRecipient,
+        ref Guid powerSettingGuid, int flags);
+
+    [DllImport("user32.dll", SetLastError = true)]
+    public static extern bool UnregisterPowerSettingNotification(IntPtr handle);
+
+    /// <summary>Header of POWERBROADCAST_SETTING; the payload follows at offset 20.</summary>
+    [StructLayout(LayoutKind.Sequential)]
+    public struct POWERBROADCAST_SETTING
+    {
+        public Guid PowerSetting;
+        public uint DataLength;
+    }
 
     // ------------------------------------------------------------------
     // DPI

@@ -88,6 +88,9 @@ public sealed class ShellViewModel : INotifyPropertyChanged
 
     public IShelfService ShelfService => _shelfService;
 
+    private readonly INotesService _notesService;
+    public INotesService NotesService => _notesService;
+
     private volatile bool _isClipboardDragInProgress;
     private Timer? _clipboardDragResetTimer;
 
@@ -115,7 +118,7 @@ public sealed class ShellViewModel : INotifyPropertyChanged
         _clipboardDragResetTimer?.Change(Timeout.Infinite, Timeout.Infinite);
     }
 
-    public ShellViewModel(ISettingsService settings, IWindowService windowService, IMediaService mediaService, ISystemMetricsService metricsService, ITimerService timerService, IClipboardService clipboardService, IShelfService shelfService, ILogger logger)
+    public ShellViewModel(ISettingsService settings, IWindowService windowService, IMediaService mediaService, ISystemMetricsService metricsService, ITimerService timerService, IClipboardService clipboardService, IShelfService shelfService, INotesService notesService, ILogger logger)
     {
         _settings = settings;
         _windowService = windowService;
@@ -124,6 +127,7 @@ public sealed class ShellViewModel : INotifyPropertyChanged
         _timerService = timerService;
         _clipboardService = clipboardService;
         _shelfService = shelfService;
+        _notesService = notesService;
         _logger = logger;
 
         RebuildTabs();

@@ -163,8 +163,12 @@ public partial class StatsTabContent : UserControl
 
     private void OnShellChanged(object? sender, PropertyChangedEventArgs e)
     {
-        if (e.PropertyName == nameof(ShellViewModel.MetricsSnapshot) && _shell is not null)
-            PushSample(_shell);
+        if (e.PropertyName != nameof(ShellViewModel.MetricsSnapshot) || _shell is not { } shell) return;
+        // Metrics are published from the poll timer's thread.
+        if (Dispatcher.CheckAccess())
+            PushSample(shell);
+        else
+            Dispatcher.BeginInvoke(() => PushSample(shell));
     }
 
     private void PushSample(ShellViewModel shell)

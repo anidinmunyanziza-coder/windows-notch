@@ -56,10 +56,136 @@ public partial class NotchWindow : Window
     /// it out while the next tab slides in.</summary>
     private UIElement? _currentContent;
 
-    private enum ClosedPillActivity { None, Media, Timer, Charging }
+    private enum ClosedPillActivity { None, Media, Timer, Charging, Hud, CapsLock, Privacy }
 
     /// <summary>What the closed pill is currently showing.</summary>
     private ClosedPillActivity _closedActivity = ClosedPillActivity.None;
+
+    // Transient system HUD (volume / brightness) — the original's sneak peek,
+    // shown for sneakPeekDuration (1.5 s) after the last change.
+    private SneakContentType _hudType = SneakContentType.Volume;
+    private double _hudValue;
+    private bool _hudMuted;
+    private DateTime _hudShownUntil = DateTime.MinValue;
+    private System.Windows.Threading.DispatcherTimer? _hudTimer;
+    private IntPtr _brightnessNotify;
+    private bool _brightnessSeeded;
+    private int _lastBrightness = -1;
+
+    // Persistent indicators: caps lock and camera / mic in use.
+    private bool _capsLockOn;
+    private bool _cameraInUse, _micInUse;
+    private DateTime _suppressVolumeHudUntil = DateTime.MinValue;
+    private double _lastClosedWidth = double.NaN;
+
+    private HudOptions CurrentHudOptions => new(
+        _shell.GetSetting("showProgressPercentages", true),
+        _shell.GetSetting("useColorCodedVolumeDisplay", true),
+        _shell.GetSetting("useColorCodedBatteryDisplay", true),
+        _shell.GetSetting("showCapsLockLabel", false));
+
+    private bool ShowCameraIndicator => _cameraInUse && _shell.GetSetting("enableCameraDetection", true);
+    private bool ShowMicIndicator => _micInUse && _shell.GetSetting("enableMicrophoneDetection", true);
+
+    /// <summary>Shows (or refreshes) the closed-notch inline HUD (volume,
+    /// brightness, Bluetooth). Ignored while the notch is open, like the original.</summary>
+    private void ShowHud(SneakContentType type, double value, bool muted, double seconds = 1.5)
+    {
+        if (_vm.State == NotchState.Open) return;
+        // enableSystemHUD gates the system HUDs; Bluetooth is a bypassed type.
+        if (type != SneakContentType.BluetoothAudio && !_shell.GetSetting("enableSystemHUD", true)) return;
+        _logger?.LogDebug($"HUD {type} {value:0.00}{(muted ? " muted" : "")}");
+
+        _hudType = type;
+        _hudValue = value;
+        _hudMuted = muted;
+        _hudShownUntil = DateTime.UtcNow.AddSeconds(seconds);
+
+        _hudTimer ??= CreateHudTimer();
+        _hudTimer.Stop();
+        _hudTimer.Interval = TimeSpan.FromSeconds(seconds);
+        _hudTimer.Start();
+
+        // Same volume/brightness HUD already up → just animate the new level;
+        // otherwise swap it in.
+        if (_closedActivity == ClosedPillActivity.Hud
+            && ContentHost.Child is ClosedHudActivity hud && hud.Type == type
+            && type is SneakContentType.Volume or SneakContentType.Brightness)
+            hud.Update(value, muted);
+        else
+            UpdateContent();
+    }
+
+    private System.Windows.Threading.DispatcherTimer CreateHudTimer()
+    {
+        var t = new System.Windows.Threading.DispatcherTimer { Interval = TimeSpan.FromSeconds(1.5) };
+        t.Tick += (_, _) =>
+        {
+            t.Stop();
+            if (_vm.State != NotchState.Open) UpdateContent();
+        };
+        return t;
+    }
+
+    private void OnVolumeChanged(float level, bool muted) =>
+        Dispatcher.BeginInvoke(() =>
+        {
+            // A Bluetooth headset connecting moves the output and its volume;
+            // the original suppresses the volume HUD for 1.5 s around that.
+            if (DateTime.UtcNow < _suppressVolumeHudUntil) return;
+            ShowHud(SneakContentType.Volume, level, muted);
+        });
+
+    private void OnBluetoothConnecting() =>
+        Dispatcher.BeginInvoke(() => _suppressVolumeHudUntil = DateTime.UtcNow.AddSeconds(4));
+
+    private void OnBluetoothConnected(string name, int? battery) =>
+        Dispatcher.BeginInvoke(() =>
+        {
+            _logger?.LogInfo($"Bluetooth audio connected: {name}{(battery is { } b ? $" ({b}%)" : "")}");
+            if (!_shell.GetSetting("showBluetoothDeviceConnections", true)) return;
+            _suppressVolumeHudUntil = DateTime.UtcNow.AddSeconds(1.5);
+            ShowHud(SneakContentType.BluetoothAudio, (battery ?? 0) / 100.0, false, seconds: 2.5);
+        });
+
+    private void OnPrivacyChanged(bool camera, bool mic) =>
+        Dispatcher.BeginInvoke(() =>
+        {
+            _cameraInUse = camera;
+            _micInUse = mic;
+            RefreshClosedIndicators(forceIfCurrent: ClosedPillActivity.Privacy);
+        });
+
+    private void OnCapsLockChanged(bool on)
+    {
+        _capsLockOn = on;
+        RefreshClosedIndicators(forceIfCurrent: null);
+    }
+
+    /// <summary>Re-evaluates the closed pill after a persistent indicator
+    /// changed; rebuilds it when the activity changes (or when the given
+    /// activity is already showing and needs new contents).</summary>
+    private void RefreshClosedIndicators(ClosedPillActivity? forceIfCurrent)
+    {
+        if (_vm.State == NotchState.Open) return;
+        if (DetermineClosedActivity() != _closedActivity || _closedActivity == forceIfCurrent)
+            UpdateContent();
+    }
+
+    /// <summary>Brightness arrives as a power-setting change (0–100). The first
+    /// notification after registering is the current value, not a change.</summary>
+    private void OnBrightnessChanged(int percent)
+    {
+        if (!_brightnessSeeded)
+        {
+            _brightnessSeeded = true;
+            _lastBrightness = percent;
+            return;
+        }
+        if (percent == _lastBrightness) return;
+        _lastBrightness = percent;
+        ShowHud(SneakContentType.Brightness, percent / 100.0, false);
+    }
 
     // Transient "charging" activity shown briefly on plug-in.
     private bool _wasOnAcPower;
@@ -69,10 +195,15 @@ public partial class NotchWindow : Window
 
     private ClosedPillActivity DetermineClosedActivity()
     {
+        // Priority follows ContentView's closed-notch chain: battery HUD →
+        // inline HUD (sneak peek) → caps lock → music → timer → … → privacy.
         if (DateTime.UtcNow < _chargingShownUntil) return ClosedPillActivity.Charging;
+        if (DateTime.UtcNow < _hudShownUntil) return ClosedPillActivity.Hud;
         if (_shell is null) return ClosedPillActivity.None;
+        if (_capsLockOn && _shell.GetSetting("enableCapsLockIndicator", true)) return ClosedPillActivity.CapsLock;
         if (!string.IsNullOrEmpty(_shell.MediaState?.Title)) return ClosedPillActivity.Media;
         if (_shell.TimerState?.IsActive == true) return ClosedPillActivity.Timer;
+        if (ShowCameraIndicator || ShowMicIndicator) return ClosedPillActivity.Privacy;
         return ClosedPillActivity.None;
     }
 
@@ -149,7 +280,7 @@ public partial class NotchWindow : Window
         Surface.RenderTransform = _hoverScale;
 
         var winW = viewModel.OpenWidth + ShadowPad * 2;
-        var winH = viewModel.OpenHeight + ShadowPad;
+        var winH = MaxOpenHeight + ShadowPad;
 
         Width = winW;
         Height = winH;
@@ -222,6 +353,45 @@ public partial class NotchWindow : Window
                 _wasOnAcPower = ps.ACLineStatus == 1;
                 _lastBatteryPct = ps.BatteryLifePercent == 255 ? 0 : ps.BatteryLifePercent;
             }
+
+            // System HUD sources: master volume (WASAPI) and panel brightness.
+            VolumeMonitor.Shared.Changed += OnVolumeChanged;
+            _logger?.LogInfo($"Volume monitor: {VolumeMonitor.Shared.AttachError ?? "attached"}, level {VolumeMonitor.Shared.Volume:0.00}");
+            var brightnessGuid = NativeMethods.GUID_VIDEO_CURRENT_MONITOR_BRIGHTNESS;
+            _brightnessNotify = NativeMethods.RegisterPowerSettingNotification(
+                _hwnd, ref brightnessGuid, NativeMethods.DEVICE_NOTIFY_WINDOW_HANDLE);
+
+            // Live indicators: Bluetooth audio connect, camera/mic, caps lock.
+            BluetoothAudioMonitor.Shared.Connecting += OnBluetoothConnecting;
+            BluetoothAudioMonitor.Shared.Connected += OnBluetoothConnected;
+            PrivacyMonitor.Shared.Changed += OnPrivacyChanged;
+            _cameraInUse = PrivacyMonitor.Shared.CameraInUse;
+            _micInUse = PrivacyMonitor.Shared.MicrophoneInUse;
+            CapsLockMonitor.Shared.Changed += OnCapsLockChanged;
+            _capsLockOn = CapsLockMonitor.Shared.IsOn;
+
+            // Gestures (two-finger vertical swipe over the notch) and the
+            // fullscreen auto-hide check.
+            Surface.MouseWheel += OnSurfaceMouseWheel;
+            _fullscreenTimer = new System.Windows.Threading.DispatcherTimer { Interval = TimeSpan.FromMilliseconds(500) };
+            _fullscreenTimer.Tick += (_, _) => OnFullscreenTick();
+            _fullscreenTimer.Start();
+            RefreshClosedIndicators(forceIfCurrent: null);
+        };
+
+        Closed += (_, _) =>
+        {
+            CapsLockMonitor.Shared.Changed -= OnCapsLockChanged;
+            _fullscreenTimer?.Stop();
+            BluetoothAudioMonitor.Shared.Connecting -= OnBluetoothConnecting;
+            BluetoothAudioMonitor.Shared.Connected -= OnBluetoothConnected;
+            PrivacyMonitor.Shared.Changed -= OnPrivacyChanged;
+            VolumeMonitor.Shared.Changed -= OnVolumeChanged;
+            if (_brightnessNotify != IntPtr.Zero)
+            {
+                NativeMethods.UnregisterPowerSettingNotification(_brightnessNotify);
+                _brightnessNotify = IntPtr.Zero;
+            }
         };
 
         // React to state / size changes from the view model.
@@ -230,6 +400,14 @@ public partial class NotchWindow : Window
             switch (e.PropertyName)
             {
                 case nameof(NotchViewModel.State):
+                    if (_vm.State == NotchState.Open)
+                    {
+                        // Opening dismisses any HUD so closing returns to the
+                        // resting activity rather than a stale volume pill.
+                        _hudShownUntil = DateTime.MinValue;
+                        _hudTimer?.Stop();
+                        _notesEditorOpen = false; // Notes always reopens on its list
+                    }
                     AnimateStateChange();
                     break;
                 case nameof(NotchViewModel.OpenWidth):
@@ -244,6 +422,19 @@ public partial class NotchWindow : Window
         // React to tab changes from the shell.
         shell.PropertyChanged += (_, e) =>
         {
+            // Media / timer state arrives on service timer threads; the pill
+            // swap below touches WPF objects, so hop to the UI thread first.
+            if (!Dispatcher.CheckAccess())
+            {
+                Dispatcher.BeginInvoke(() => OnShellPropertyChanged(e.PropertyName));
+                return;
+            }
+            OnShellPropertyChanged(e.PropertyName);
+        };
+
+        void OnShellPropertyChanged(string? propertyName)
+        {
+            var e = new System.ComponentModel.PropertyChangedEventArgs(propertyName);
             if (e.PropertyName == nameof(ShellViewModel.CurrentView))
             {
                 UpdateContent();
@@ -258,7 +449,7 @@ public partial class NotchWindow : Window
                 if (DetermineClosedActivity() != _closedActivity)
                     UpdateContent();
             }
-        };
+        }
 
         UpdateContent();
 
@@ -286,12 +477,55 @@ public partial class NotchWindow : Window
     /// which tabs are available.</summary>
     public void RefreshContent() => UpdateContent();
 
+    // ------------------------------------------------------------------
+    // Per-tab open height (the original's notesLayoutState.preferredHeight)
+    // ------------------------------------------------------------------
+
+    private const double NotesListHeight = 240;
+    private const double NotesEditorHeight = 320;
+    private bool _notesEditorOpen;
+    private double _requestedOpenHeight = double.NaN;
+
+    /// <summary>Tallest the open notch gets; the fixed window is sized for it
+    /// (the extra transparent area is click-through).</summary>
+    private double MaxOpenHeight => Math.Max(_vm.OpenHeight, NotesEditorHeight);
+
+    /// <summary>Open height for the current tab: Notes grows to 240 for its list
+    /// and 320 while editing; every other tab uses the standard open height.</summary>
+    private double EffectiveOpenHeight => _shell?.CurrentView == NotchView.Notes
+        ? Math.Max(_vm.OpenHeight, _notesEditorOpen ? NotesEditorHeight : NotesListHeight)
+        : _vm.OpenHeight;
+
+    /// <summary>Springs the open notch to the current tab's height, if it changed.</summary>
+    private void AnimateOpenHeight()
+    {
+        if (_vm.State != NotchState.Open || _hwnd == IntPtr.Zero) return;
+        var h = EffectiveOpenHeight;
+        if (Math.Abs(h - _requestedOpenHeight) < 0.5) return;
+        _requestedOpenHeight = h;
+        RunSpringAnimation(_vm.OpenWidth, h, OpenRadii,
+            DesignTokens.OpenSpringResponse, DesignTokens.OpenSpringDamping);
+    }
+
+    private UIElement CreateNotesContent()
+    {
+        _notesEditorOpen = false;
+        return new NotesTabContent(_shell.NotesService, _shell, editor =>
+        {
+            _notesEditorOpen = editor;
+            AnimateOpenHeight();
+        });
+    }
+
     /// <summary>Resting-pill width: wider for a live activity, compact when idle.</summary>
     private double EffectiveClosedWidth => _closedActivity switch
     {
         ClosedPillActivity.Media => DesignTokens.ClosedMediaNotchWidth,
         ClosedPillActivity.Timer => 250.0,
         ClosedPillActivity.Charging => 230.0,
+        ClosedPillActivity.Hud => ClosedHudActivity.PillWidth(_hudType, _hudValue, CurrentHudOptions, _vm.ClosedWidth),
+        ClosedPillActivity.CapsLock => ClosedHudActivity.PillWidth(SneakContentType.CapsLock, 1, CurrentHudOptions, _vm.ClosedWidth),
+        ClosedPillActivity.Privacy => ClosedPrivacyActivity.PillWidth(ShowCameraIndicator, ShowMicIndicator, _vm.ClosedWidth),
         _ => _vm.ClosedWidth,
     };
 
@@ -319,10 +553,14 @@ public partial class NotchWindow : Window
             _switchDir = 0;
 
             var prev = _closedActivity;
+            var prevChild = ContentHost.Child;
             var arrivingFromOpen = _outerGrid is not null && ReferenceEquals(ContentHost.Child, _outerGrid);
             _closedActivity = DetermineClosedActivity();
             ContentHost.Child = _closedActivity switch
             {
+                ClosedPillActivity.Hud => new ClosedHudActivity(_hudType, _hudValue, _hudMuted, CurrentHudOptions),
+                ClosedPillActivity.CapsLock => new ClosedHudActivity(SneakContentType.CapsLock, 1, false, CurrentHudOptions),
+                ClosedPillActivity.Privacy => new ClosedPrivacyActivity(ShowCameraIndicator, ShowMicIndicator),
                 ClosedPillActivity.Media => new ClosedMediaActivity { DataContext = _shell },
                 ClosedPillActivity.Timer => new ClosedTimerActivity { DataContext = _shell },
                 ClosedPillActivity.Charging => new ClosedChargingActivity(_lastBatteryPct),
@@ -330,12 +568,23 @@ public partial class NotchWindow : Window
             };
 
             // Blur-replace the pill's contents in when it actually changes.
-            if (ContentHost.Child is UIElement activity && (arrivingFromOpen || prev != _closedActivity))
+            var hudKindChanged = prevChild is ClosedHudActivity oldHud
+                && ContentHost.Child is ClosedHudActivity newHud && oldHud.Type != newHud.Type;
+            var privacyChanged = prevChild is ClosedPrivacyActivity oldP
+                && ContentHost.Child is ClosedPrivacyActivity newP
+                && (oldP.Camera != newP.Camera || oldP.Microphone != newP.Microphone);
+            if (ContentHost.Child is UIElement activity
+                && (arrivingFromOpen || prev != _closedActivity || hudKindChanged || privacyChanged))
                 FadeBlurIn(activity, TimeSpan.FromMilliseconds(260));
 
-            // Expand the resting pill for a live activity, contract when it ends.
-            if (prev != _closedActivity)
+            // Expand the resting pill for a live activity, contract when it ends;
+            // also re-spring when the same activity changes size (e.g. a second
+            // privacy indicator adds a wing).
+            var width = EffectiveClosedWidth;
+            if (prev != _closedActivity) _logger?.LogDebug($"Closed pill: {prev} -> {_closedActivity} ({width:0} wide)");
+            if (prev != _closedActivity || (!arrivingFromOpen && Math.Abs(width - _lastClosedWidth) > 0.5))
                 AnimateClosedWidth();
+            _lastClosedWidth = width;
             return;
         }
 
@@ -348,6 +597,7 @@ public partial class NotchWindow : Window
             NotchView.Timer => new TimerTabContent { DataContext = _shell },
             NotchView.Terminal => new TerminalTabContent(),
             NotchView.Clipboard => new ClipboardTabContent { DataContext = _shell },
+            NotchView.Notes => CreateNotesContent(),
             _ => new TextBlock
             {
                 Text = _shell.CurrentView.ToString(),
@@ -366,6 +616,9 @@ public partial class NotchWindow : Window
         var old = _currentContent;
         _currentContent = content;
         grid.Children.Add(content);
+
+        // Tabs can have their own open height (Notes is taller).
+        AnimateOpenHeight();
 
         if (_switchDir != 0 && old is not null && grid.Children.Contains(old))
         {
@@ -623,6 +876,7 @@ public partial class NotchWindow : Window
             (NotchView.Shelf, null),
             (NotchView.Stats, "enableStatsFeature"),
             (NotchView.Timer, "enableTimerFeature"),
+            (NotchView.Notes, "enableNotes"),
             (NotchView.Clipboard, "enableClipboardManager"),
             (NotchView.Terminal, "enableTerminalFeature"),
         };
@@ -663,12 +917,142 @@ public partial class NotchWindow : Window
 
     private DateTime _lastSwipe = DateTime.MinValue;
 
+    // ------------------------------------------------------------------
+    // Gestures - the original's panGesture handlers (enableGestures):
+    //   swipe down over the closed notch -> open, swipe up over the open notch
+    //   -> close (closeGestureEnabled), horizontal swipe -> skip track.
+    // A precision touchpad's two-finger swipe arrives as wheel deltas; with
+    // Windows' default "down motion scrolls up", fingers moving down give a
+    // positive delta, so "pull down" = positive (reverseScrollGestures flips).
+    // ------------------------------------------------------------------
+
+    private int _vWheelAccum;
+    private DateTime _lastVWheel = DateTime.MinValue;
+    private int _skipAccum;
+    private DateTime _lastSkipWheel = DateTime.MinValue;
+    private bool _skipFired;
+
+    /// <summary>gestureSensitivity (200 by default) as an accumulated wheel delta.</summary>
+    private double GestureThreshold => Math.Max(40, _shell.GetSetting("gestureSensitivity", 200.0));
+
+    private void OnSurfaceMouseWheel(object sender, MouseWheelEventArgs e)
+    {
+        // Scrollable tab content (lists) handles the wheel first; only an
+        // unhandled wheel is a gesture, like the original's isScrollGestureActive.
+        if (e.Handled || _hiddenForFullscreen || !_shell.GetSetting("enableGestures", true)) return;
+
+        var now = DateTime.UtcNow;
+        if ((now - _lastVWheel).TotalMilliseconds > 350 || Math.Sign(e.Delta) != Math.Sign(_vWheelAccum))
+            _vWheelAccum = 0;
+        _lastVWheel = now;
+        _vWheelAccum += e.Delta;
+        if (Math.Abs(_vWheelAccum) < GestureThreshold) return;
+
+        var pullDown = (_vWheelAccum > 0) ^ _shell.GetSetting("reverseScrollGestures", false);
+        _vWheelAccum = 0;
+
+        if (_vm.State != NotchState.Open && pullDown)
+        {
+            _logger?.LogDebug("Gesture: swipe down -> open");
+            OpenNotch();
+            e.Handled = true;
+        }
+        else if (_vm.State == NotchState.Open && !pullDown && _shell.GetSetting("closeGestureEnabled", true))
+        {
+            _logger?.LogDebug("Gesture: swipe up -> close");
+            CloseNotch();
+            e.Handled = true;
+        }
+    }
+
+    /// <summary>Horizontal swipe on the closed media pill skips (once per
+    /// swipe): positive -> next, negative -> previous.</summary>
+    private void OnClosedHorizontalWheel(int delta)
+    {
+        if (_closedActivity != ClosedPillActivity.Media || _hiddenForFullscreen
+            || !_shell.GetSetting("enableGestures", true)
+            || !_shell.GetSetting("enableHorizontalMusicGestures", true)) return;
+
+        // A swipe on the pill means "skip", not "open": hold off the hover-open.
+        if (_isHovering)
+        {
+            _hoverTimer.Stop();
+            _hoverTimer.Start();
+        }
+
+        var now = DateTime.UtcNow;
+        if ((now - _lastSkipWheel).TotalMilliseconds > 350 || Math.Sign(delta) != Math.Sign(_skipAccum))
+        {
+            _skipAccum = 0;
+            _skipFired = false;
+        }
+        _lastSkipWheel = now;
+        _skipAccum += delta;
+        if (_skipFired || Math.Abs(_skipAccum) < GestureThreshold) return;
+        _skipFired = true;
+
+        var forward = (_skipAccum > 0) ^ _shell.GetSetting("reverseSwipeGestures", false);
+        var tenSeconds = _shell.GetSetting("musicGestureBehavior", "track").TrimStart('.') == "tenSecond";
+        var command = tenSeconds
+            ? (forward ? MediaCommand.SeekForward : MediaCommand.SeekBackward)
+            : (forward ? MediaCommand.Next : MediaCommand.Previous);
+        _logger?.LogDebug($"Gesture: horizontal swipe -> {command}");
+        _ = _shell.SendMediaCommand(command);
+    }
+
+    // ------------------------------------------------------------------
+    // Fullscreen auto-hide - the original's FullscreenMediaDetection +
+    // hideNotchOption (always / nowPlayingOnly / never). On a screen without a
+    // hardware notch the closed notch collapses entirely, so here it fades out
+    // and becomes click-through until the fullscreen app leaves.
+    // ------------------------------------------------------------------
+
+    private System.Windows.Threading.DispatcherTimer? _fullscreenTimer;
+    private bool _hiddenForFullscreen;
+
+    private void OnFullscreenTick()
+    {
+        var hide = false;
+        if (_vm.State != NotchState.Open && _hwnd != IntPtr.Zero
+            && _shell.GetSetting("enableFullscreenMediaDetection", true))
+        {
+            var option = _shell.GetSetting("hideNotchOption", "nowPlayingOnly").TrimStart('.');
+            if (_shell.GetSetting("alwaysHideInFullscreen", false)) option = "always";
+            if (option != "never" && FullscreenDetector.FullscreenProcessOnMonitorOf(_hwnd) is { } process)
+                hide = option == "always"
+                    || FullscreenDetector.MatchesMediaApp(process, _shell.MediaState?.PlayerAppUserModelId);
+        }
+        SetHiddenForFullscreen(hide);
+    }
+
+    private void SetHiddenForFullscreen(bool hide)
+    {
+        if (hide == _hiddenForFullscreen) return;
+        _hiddenForFullscreen = hide;
+        _logger?.LogInfo(hide ? "Fullscreen app detected: hiding notch" : "Fullscreen app left: showing notch");
+        if (hide)
+        {
+            _hoverTimer.Stop();
+            _isHovering = false;
+        }
+        Surface.IsHitTestVisible = !hide;
+        // withAnimation(.smooth)
+        Surface.BeginAnimation(OpacityProperty, new DoubleAnimation(hide ? 0 : 1, TimeSpan.FromMilliseconds(350))
+        {
+            EasingFunction = new CubicEase { EasingMode = EasingMode.EaseInOut },
+        });
+    }
+
     /// <summary>Accumulates horizontal-wheel deltas and switches one tab per swipe
     /// gesture, with a short cooldown so inertial scrolling doesn't race through
     /// every tab.</summary>
     private void OnHorizontalWheel(int delta)
     {
-        if (_vm.State != NotchState.Open) return;
+        if (_vm.State != NotchState.Open)
+        {
+            OnClosedHorizontalWheel(delta);
+            return;
+        }
 
         _hWheelAccum += delta;
         const int threshold = 80;
@@ -893,6 +1277,20 @@ public partial class NotchWindow : Window
             return IntPtr.Zero;
         }
 
+        if (msg == NativeMethods.WM_POWERBROADCAST
+            && wParam.ToInt32() == NativeMethods.PBT_POWERSETTINGCHANGE && lParam != IntPtr.Zero)
+        {
+            var setting = System.Runtime.InteropServices.Marshal
+                .PtrToStructure<NativeMethods.POWERBROADCAST_SETTING>(lParam);
+            if (setting.PowerSetting == NativeMethods.GUID_VIDEO_CURRENT_MONITOR_BRIGHTNESS
+                && setting.DataLength >= 4)
+            {
+                OnBrightnessChanged(System.Runtime.InteropServices.Marshal.ReadInt32(lParam, 20));
+                handled = true;
+                return new IntPtr(1);
+            }
+        }
+
         if (msg == NativeMethods.WM_MOUSEHWHEEL)
         {
             // Horizontal scroll (two-finger left/right) switches tabs. Delta is
@@ -910,7 +1308,7 @@ public partial class NotchWindow : Window
             double screenY = (short)((lp >> 16) & 0xFFFF);
 
             handled = true;
-            return IsScreenPointInsideSurface(screenX, screenY)
+            return !_hiddenForFullscreen && IsScreenPointInsideSurface(screenX, screenY)
                 ? new IntPtr(NativeMethods.HTCLIENT)
                 : new IntPtr(NativeMethods.HTTRANSPARENT);
         }
@@ -1032,7 +1430,8 @@ public partial class NotchWindow : Window
         }
 
         var targetW = open ? _vm.OpenWidth : EffectiveClosedWidth;
-        var targetH = open ? _vm.OpenHeight : _vm.ClosedHeight;
+        var targetH = open ? EffectiveOpenHeight : _vm.ClosedHeight;
+        if (open) _requestedOpenHeight = targetH;
 
         var response = open ? DesignTokens.OpenSpringResponse : DesignTokens.CloseSpringResponse;
         var damping = open ? DesignTokens.OpenSpringDamping : DesignTokens.CloseSpringDamping;
@@ -1154,7 +1553,7 @@ public partial class NotchWindow : Window
 
         // Fixed, screen-centred window sized for the open notch plus shadow room.
         var winW = _vm.OpenWidth + ShadowPad * 2;
-        var winH = _vm.OpenHeight + ShadowPad;
+        var winH = MaxOpenHeight + ShadowPad;
         var left = DipWorkLeft + (DipWorkWidth - winW) / 2.0;
         var top = DipWorkTop;
 
@@ -1165,7 +1564,7 @@ public partial class NotchWindow : Window
 
         // The Surface (centred, top-aligned) carries the current notch size.
         var sw = open ? _vm.OpenWidth : EffectiveClosedWidth;
-        var sh = open ? _vm.OpenHeight : _vm.ClosedHeight;
+        var sh = open ? EffectiveOpenHeight : _vm.ClosedHeight;
         var radii = open ? OpenRadii : ClosedRadii;
         Surface.Width = sw;
         Surface.Height = sh;

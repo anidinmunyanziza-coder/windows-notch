@@ -51,8 +51,12 @@ public partial class HomeTabContent : UserControl
 
     private void OnShellChanged(object? sender, PropertyChangedEventArgs e)
     {
-        if (e.PropertyName == nameof(ShellViewModel.MediaState))
+        if (e.PropertyName != nameof(ShellViewModel.MediaState)) return;
+        // MediaState is published from the media service's timer thread.
+        if (Dispatcher.CheckAccess())
             Sync(animate: true);
+        else
+            Dispatcher.BeginInvoke(() => Sync(animate: true));
     }
 
     private void Sync(bool animate)
