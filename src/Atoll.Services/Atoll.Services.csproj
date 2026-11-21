@@ -11,6 +11,11 @@
     <PackageReference Include="System.Diagnostics.PerformanceCounter" Version="11.0.0" />
   </ItemGroup>
 
+  <ItemGroup>
+    <!-- The original's bundled model price table (per-token USD), for LLM usage cost estimates. -->
+    <EmbeddedResource Include="Usage\pricing.json" LogicalName="Atoll.Services.Usage.pricing.json" />
+  </ItemGroup>
+
   <PropertyGroup>
     <TargetFramework>net10.0-windows10.0.19041.0</TargetFramework>
     <!-- The clipboard reader/writer uses WPF's Clipboard (STA) so rich text,

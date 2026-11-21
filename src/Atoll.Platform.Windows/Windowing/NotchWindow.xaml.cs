@@ -56,7 +56,7 @@ public partial class NotchWindow : Window
     /// it out while the next tab slides in.</summary>
     private UIElement? _currentContent;
 
-    private enum ClosedPillActivity { None, Media, Timer, Charging, Hud, CapsLock, Privacy }
+    private enum ClosedPillActivity { None, Media, Timer, Charging, Hud, CapsLock, Privacy, Face }
 
     /// <summary>What the closed pill is currently showing.</summary>
     private ClosedPillActivity _closedActivity = ClosedPillActivity.None;
@@ -204,6 +204,8 @@ public partial class NotchWindow : Window
         if (!string.IsNullOrEmpty(_shell.MediaState?.Title)) return ClosedPillActivity.Media;
         if (_shell.TimerState?.IsActive == true) return ClosedPillActivity.Timer;
         if (ShowCameraIndicator || ShowMicIndicator) return ClosedPillActivity.Privacy;
+        // Nothing else to show: the idle face (Defaults[.showNotHumanFace]).
+        if (_shell.GetSetting("showNotHumanFace", true)) return ClosedPillActivity.Face;
         return ClosedPillActivity.None;
     }
 
@@ -279,7 +281,7 @@ public partial class NotchWindow : Window
         Surface.RenderTransformOrigin = new Point(0.5, 0.0);
         Surface.RenderTransform = _hoverScale;
 
-        var winW = viewModel.OpenWidth + ShadowPad * 2;
+        var winW = WindowWidth;
         var winH = MaxOpenHeight + ShadowPad;
 
         Width = winW;
@@ -376,6 +378,9 @@ public partial class NotchWindow : Window
             _fullscreenTimer = new System.Windows.Threading.DispatcherTimer { Interval = TimeSpan.FromMilliseconds(500) };
             _fullscreenTimer.Tick += (_, _) => OnFullscreenTick();
             _fullscreenTimer.Start();
+
+            // Live lyrics capsule beside the closed notch.
+            InitLyricsCapsule();
             RefreshClosedIndicators(forceIfCurrent: null);
         };
 
@@ -383,6 +388,7 @@ public partial class NotchWindow : Window
         {
             CapsLockMonitor.Shared.Changed -= OnCapsLockChanged;
             _fullscreenTimer?.Stop();
+            StopSatelliteRendering();
             BluetoothAudioMonitor.Shared.Connecting -= OnBluetoothConnecting;
             BluetoothAudioMonitor.Shared.Connected -= OnBluetoothConnected;
             PrivacyMonitor.Shared.Changed -= OnPrivacyChanged;
@@ -400,6 +406,7 @@ public partial class NotchWindow : Window
             switch (e.PropertyName)
             {
                 case nameof(NotchViewModel.State):
+                    PokeLyricsCapsule();
                     if (_vm.State == NotchState.Open)
                     {
                         // Opening dismisses any HUD so closing returns to the
@@ -435,6 +442,8 @@ public partial class NotchWindow : Window
         void OnShellPropertyChanged(string? propertyName)
         {
             var e = new System.ComponentModel.PropertyChangedEventArgs(propertyName);
+            if (propertyName is nameof(ShellViewModel.MediaState) or nameof(ShellViewModel.Lyrics))
+                PokeLyricsCapsule();
             if (e.PropertyName == nameof(ShellViewModel.CurrentView))
             {
                 UpdateContent();
@@ -492,9 +501,12 @@ public partial class NotchWindow : Window
 
     /// <summary>Open height for the current tab: Notes grows to 240 for its list
     /// and 320 while editing; every other tab uses the standard open height.</summary>
-    private double EffectiveOpenHeight => _shell?.CurrentView == NotchView.Notes
-        ? Math.Max(_vm.OpenHeight, _notesEditorOpen ? NotesEditorHeight : NotesListHeight)
-        : _vm.OpenHeight;
+    private double EffectiveOpenHeight => _shell?.CurrentView switch
+    {
+        NotchView.Notes => Math.Max(_vm.OpenHeight, _notesEditorOpen ? NotesEditorHeight : NotesListHeight),
+        _ => _vm.OpenHeight,
+    };
+
 
     /// <summary>Springs the open notch to the current tab's height, if it changed.</summary>
     private void AnimateOpenHeight()
@@ -526,6 +538,7 @@ public partial class NotchWindow : Window
         ClosedPillActivity.Hud => ClosedHudActivity.PillWidth(_hudType, _hudValue, CurrentHudOptions, _vm.ClosedWidth),
         ClosedPillActivity.CapsLock => ClosedHudActivity.PillWidth(SneakContentType.CapsLock, 1, CurrentHudOptions, _vm.ClosedWidth),
         ClosedPillActivity.Privacy => ClosedPrivacyActivity.PillWidth(ShowCameraIndicator, ShowMicIndicator, _vm.ClosedWidth),
+        ClosedPillActivity.Face => ClosedFaceActivity.PillWidth(_vm.ClosedWidth),
         _ => _vm.ClosedWidth,
     };
 
@@ -561,6 +574,7 @@ public partial class NotchWindow : Window
                 ClosedPillActivity.Hud => new ClosedHudActivity(_hudType, _hudValue, _hudMuted, CurrentHudOptions),
                 ClosedPillActivity.CapsLock => new ClosedHudActivity(SneakContentType.CapsLock, 1, false, CurrentHudOptions),
                 ClosedPillActivity.Privacy => new ClosedPrivacyActivity(ShowCameraIndicator, ShowMicIndicator),
+                ClosedPillActivity.Face => new ClosedFaceActivity(),
                 ClosedPillActivity.Media => new ClosedMediaActivity { DataContext = _shell },
                 ClosedPillActivity.Timer => new ClosedTimerActivity { DataContext = _shell },
                 ClosedPillActivity.Charging => new ClosedChargingActivity(_lastBatteryPct),
@@ -595,9 +609,9 @@ public partial class NotchWindow : Window
             NotchView.Shelf => new ShelfTabContent { DataContext = _shell },
             NotchView.Stats => new StatsTabContent { DataContext = _shell },
             NotchView.Timer => new TimerTabContent { DataContext = _shell },
-            NotchView.Terminal => new TerminalTabContent(),
             NotchView.Clipboard => new ClipboardTabContent { DataContext = _shell },
             NotchView.Notes => CreateNotesContent(),
+            NotchView.LlmUsage => new LlmUsageTabContent(_shell),
             _ => new TextBlock
             {
                 Text = _shell.CurrentView.ToString(),
@@ -645,11 +659,7 @@ public partial class NotchWindow : Window
 
     private Grid? _contentGrid;
     private Border? _statusHeader;
-    private System.Windows.Shapes.Rectangle? _batteryFill;
-    private TextBlock? _batteryText;
     private System.Windows.Threading.DispatcherTimer? _batteryTimer;
-
-    private const double BatteryInnerWidth = 17.0;
 
     private Grid? _outerGrid;
 
@@ -684,114 +694,6 @@ public partial class NotchWindow : Window
         return _contentGrid!;
     }
 
-    /// <summary>Thin top strip carrying the battery indicator (top-right), as in
-    /// the original notch header. The battery is drawn with shapes (a body, a
-    /// proportional fill and a terminal nub) so it never depends on a font glyph.</summary>
-    private Border BuildStatusHeader()
-    {
-        _batteryText = new TextBlock
-        {
-            FontSize = 11.5,
-            Foreground = new SolidColorBrush(Color.FromRgb(0xE6, 0xE6, 0xE6)),
-            VerticalAlignment = VerticalAlignment.Center,
-            Margin = new Thickness(0, 0, 6, 0),
-        };
-
-        // Battery body: outlined rounded rect holding the proportional fill.
-        _batteryFill = new System.Windows.Shapes.Rectangle
-        {
-            RadiusX = 1.0,
-            RadiusY = 1.0,
-            HorizontalAlignment = HorizontalAlignment.Left,
-            Height = 7,
-            Width = BatteryInnerWidth,
-        };
-        var fillHost = new Grid { Margin = new Thickness(1.5, 0, 1.5, 0) };
-        fillHost.Children.Add(_batteryFill);
-
-        var body = new Border
-        {
-            Width = 22,
-            Height = 11,
-            CornerRadius = new CornerRadius(2.5),
-            BorderBrush = new SolidColorBrush(Color.FromRgb(0x9A, 0x9A, 0x9E)),
-            BorderThickness = new Thickness(1),
-            VerticalAlignment = VerticalAlignment.Center,
-            Child = fillHost,
-        };
-        var nub = new System.Windows.Shapes.Rectangle
-        {
-            Width = 2, Height = 5, RadiusX = 1, RadiusY = 1,
-            Fill = new SolidColorBrush(Color.FromRgb(0x9A, 0x9A, 0x9E)),
-            VerticalAlignment = VerticalAlignment.Center,
-            Margin = new Thickness(0.5, 0, 0, 0),
-        };
-
-        var panel = new StackPanel
-        {
-            Orientation = Orientation.Horizontal,
-            HorizontalAlignment = HorizontalAlignment.Right,
-            VerticalAlignment = VerticalAlignment.Center,
-        };
-        panel.Children.Add(HeaderIconButton("", "Clipboard", (_, _) => SwitchToTab(NotchView.Clipboard)));
-        panel.Children.Add(HeaderIconButton("", "Pick a colour", (_, _) => PickScreenColor()));
-        panel.Children.Add(HeaderIconButton("", "Settings", (_, _) => _shell!.RequestOpenSettings()));
-        panel.Children.Add(new Border { Width = 8 }); // gap before battery
-        panel.Children.Add(_batteryText);
-        panel.Children.Add(body);
-        panel.Children.Add(nub);
-
-        return new Border
-        {
-            Height = 24,
-            Padding = new Thickness(14, 5, 16, 0),
-            Child = panel,
-        };
-    }
-
-    private static Button HeaderIconButton(string glyph, string tip, RoutedEventHandler onClick)
-    {
-        var button = new Button
-        {
-            Content = glyph,
-            FontFamily = new FontFamily("Segoe MDL2 Assets"),
-            FontSize = 14,
-            Foreground = new SolidColorBrush(Color.FromRgb(0xC8, 0xC8, 0xCC)),
-            Background = Brushes.Transparent,
-            BorderThickness = new Thickness(0),
-            Width = 26,
-            Height = 20,
-            Margin = new Thickness(1, 0, 1, 0),
-            Cursor = System.Windows.Input.Cursors.Hand,
-            ToolTip = tip,
-            Template = HeaderIconTemplate(),
-        };
-        button.Click += onClick;
-        return button;
-    }
-
-    private static ControlTemplate? _headerIconTemplate;
-
-    private static ControlTemplate HeaderIconTemplate()
-    {
-        if (_headerIconTemplate is not null) return _headerIconTemplate;
-        var border = new FrameworkElementFactory(typeof(Border));
-        border.SetValue(Border.BackgroundProperty, new TemplateBindingExtension(Button.BackgroundProperty));
-        border.SetValue(Border.CornerRadiusProperty, new CornerRadius(6));
-        var presenter = new FrameworkElementFactory(typeof(ContentPresenter));
-        presenter.SetValue(ContentPresenter.HorizontalAlignmentProperty, HorizontalAlignment.Center);
-        presenter.SetValue(ContentPresenter.VerticalAlignmentProperty, VerticalAlignment.Center);
-        border.AppendChild(presenter);
-        var trigger = new Trigger { Property = UIElement.IsMouseOverProperty, Value = true };
-        trigger.Setters.Add(new Setter(Border.BackgroundProperty,
-            new SolidColorBrush(Color.FromArgb(0x24, 0xFF, 0xFF, 0xFF))));
-        var ct = new ControlTemplate(typeof(Button)) { VisualTree = border };
-        ct.Triggers.Add(trigger);
-        ct.Seal();
-        _headerIconTemplate = ct;
-        return ct;
-    }
-
     /// <summary>Opens the screen colour picker; the sampled hex is copied to the
     /// clipboard.</summary>
     private void PickScreenColor()
@@ -803,30 +705,6 @@ public partial class NotchWindow : Window
             _logger?.LogInfo($"Picked colour {hex} (copied to clipboard)");
         };
         overlay.Show();
-    }
-
-    private void RefreshBattery()
-    {
-        if (_batteryFill is null || _batteryText is null || _statusHeader is null) return;
-
-        if (!NativeMethods.GetSystemPowerStatus(out var s)
-            || (s.BatteryFlag & 128) != 0 || s.BatteryLifePercent == 255)
-        {
-            // No reading, or a desktop with no battery.
-            _statusHeader.Visibility = Visibility.Collapsed;
-            return;
-        }
-
-        _statusHeader.Visibility = Visibility.Visible;
-        int pct = Math.Clamp((int)s.BatteryLifePercent, 0, 100);
-        bool charging = s.ACLineStatus == 1 || (s.BatteryFlag & 8) != 0;
-
-        _batteryFill.Width = Math.Max(1.5, BatteryInnerWidth * pct / 100.0);
-        _batteryFill.Fill = new SolidColorBrush(
-            charging ? Color.FromRgb(0x30, 0xD1, 0x58) :
-            pct <= 20 ? Color.FromRgb(0xFF, 0x45, 0x3A) :
-            Color.FromRgb(0xF2, 0xF2, 0xF2));
-        _batteryText.Text = pct + "%";
     }
 
     /// <summary>Animates an element's horizontal offset and opacity for the tab
@@ -876,9 +754,9 @@ public partial class NotchWindow : Window
             (NotchView.Shelf, null),
             (NotchView.Stats, "enableStatsFeature"),
             (NotchView.Timer, "enableTimerFeature"),
+            (NotchView.LlmUsage, "enableLLMUsageFeature"),
             (NotchView.Notes, "enableNotes"),
             (NotchView.Clipboard, "enableClipboardManager"),
-            (NotchView.Terminal, "enableTerminalFeature"),
         };
 
         var list = new System.Collections.Generic.List<NotchView>();
@@ -1552,7 +1430,7 @@ public partial class NotchWindow : Window
         var open = _vm.State == NotchState.Open;
 
         // Fixed, screen-centred window sized for the open notch plus shadow room.
-        var winW = _vm.OpenWidth + ShadowPad * 2;
+        var winW = WindowWidth;
         var winH = MaxOpenHeight + ShadowPad;
         var left = DipWorkLeft + (DipWorkWidth - winW) / 2.0;
         var top = DipWorkTop;

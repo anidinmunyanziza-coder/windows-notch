@@ -69,6 +69,9 @@ public partial class App : Application
                 services.AddSingleton<IClipboardService, ClipboardService>();
                 services.AddSingleton<IShelfService, Atoll.Services.Productivity.ShelfService>();
                 services.AddSingleton<INotesService>(_ => new Atoll.Services.Productivity.NotesService());
+                services.AddSingleton<Atoll.Core.Media.ILyricsService>(_ => new Atoll.Services.Media.LyricsService());
+                services.AddSingleton<Atoll.Core.Usage.ILlmUsageService>(sp =>
+                    new Atoll.Services.Usage.LlmUsageService(sp.GetRequiredService<ISettingsService>()));
                 services.AddSingleton<IWindowService, WindowService>();
                 services.AddSingleton<IShortcutService, ShortcutService>();
                 services.AddSingleton<ITrayService>(sp =>
@@ -85,6 +88,8 @@ public partial class App : Application
                         sp.GetRequiredService<IClipboardService>(),
                         sp.GetRequiredService<IShelfService>(),
                         sp.GetRequiredService<INotesService>(),
+                        sp.GetRequiredService<Atoll.Core.Media.ILyricsService>(),
+                        sp.GetRequiredService<Atoll.Core.Usage.ILlmUsageService>(),
                         sp.GetRequiredService<ILogger>());
                     if (windowService is WindowService ws)
                         ws.Shell = shell;
@@ -118,7 +123,7 @@ public partial class App : Application
         // These tabs default to off in the original but are on in this port; store
         // that explicitly (unless the user chose) so the settings window, which
         // falls back to the original's defaults, shows what the notch shows.
-        foreach (var key in new[] { "enableStatsFeature", "enableTerminalFeature", "enableNotes" })
+        foreach (var key in new[] { "enableStatsFeature", "enableNotes", "enableLyrics", "enableLLMUsageFeature", "showNotHumanFace" })
             if (!settingsService.Contains(key))
                 settingsService.Set(key, true);
 

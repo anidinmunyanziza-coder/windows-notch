@@ -92,8 +92,15 @@ public sealed class WindowService : IWindowService
             case "showCalendar":
             case "enableStatsFeature":
             case "enableTimerFeature":
-            case "enableTerminalFeature":
             case "enableClipboardManager":
+            case "enableNotes":
+            case "enableLLMUsageFeature":
+            case "showNotHumanFace":
+                ForEachWindow(w => w.RefreshContent());
+                break;
+
+            case "enableLyrics":
+                Shell?.RefreshLyrics();
                 ForEachWindow(w => w.RefreshContent());
                 break;
         }

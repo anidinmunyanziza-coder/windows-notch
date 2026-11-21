@@ -117,7 +117,7 @@ public partial class NotchWindow
                 && DetermineClosedActivity() == ClosedPillActivity.Media)
             {
                 plan.ArtFrom = MeasureInSurface(home.ArtMorphVisual);
-                plan.ArtFromRadius = 13;
+                plan.ArtFromRadius = HomeTabContent.ArtCornerRadius;
                 plan.ArtFromOpacity = home.ArtMorphVisual.Opacity;
                 plan.SpectrumFrom = MeasureInSurface(home.SpectrumMorphHost);
                 home.ArtMorphHost.Opacity = 0;
@@ -143,7 +143,7 @@ public partial class NotchWindow
             artVisual = home.ArtMorphVisual;
             artHost = home.ArtMorphHost;
             spectrumHost = home.SpectrumMorphHost;
-            toRadius = 13;
+            toRadius = HomeTabContent.ArtCornerRadius;
         }
         else if (!opening && ContentHost.Child is ClosedMediaActivity closed)
         {

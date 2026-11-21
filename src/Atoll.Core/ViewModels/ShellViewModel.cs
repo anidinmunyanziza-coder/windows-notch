@@ -6,7 +6,9 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using Atoll.Core.Contracts;
+using Atoll.Core.Media;
 using Atoll.Core.Models;
+using Atoll.Core.Usage;
 
 namespace Atoll.Core.ViewModels;
 
@@ -31,7 +33,7 @@ public sealed class ShellViewModel : INotifyPropertyChanged
     {
         NotchView.Home, NotchView.Shelf, NotchView.Timer, NotchView.Stats,
         NotchView.LlmUsage, NotchView.ColorPicker, NotchView.Notes,
-        NotchView.Clipboard, NotchView.Terminal, NotchView.ExtensionExperience
+        NotchView.Clipboard, NotchView.ExtensionExperience
     };
 
     private readonly ObservableCollection<NotchViewModel> _notches = new();
@@ -91,6 +93,60 @@ public sealed class ShellViewModel : INotifyPropertyChanged
     private readonly INotesService _notesService;
     public INotesService NotesService => _notesService;
 
+    private readonly ILlmUsageService _llmUsage;
+    public ILlmUsageService LlmUsage => _llmUsage;
+
+    // ── Lyrics (the original's MusicManager lyrics state) ──────────────────
+    private readonly ILyricsService _lyricsService;
+    private string _lyricsKey = "";
+    private CancellationTokenSource? _lyricsCts;
+
+    private LyricsResult _lyrics = LyricsResult.Unavailable;
+    /// <summary>Lyrics for the current track (published from a worker thread).</summary>
+    public LyricsResult Lyrics
+    {
+        get => _lyrics;
+        private set => SetField(ref _lyrics, value);
+    }
+
+    /// <summary>Fetches lyrics when the track (title + artist) changes; stale
+    /// lookups are cancelled. Gated by Defaults[.enableLyrics].</summary>
+    private void UpdateLyricsFor(MediaPlaybackState state)
+    {
+        var title = state.Title ?? "";
+        var artist = state.Artist ?? "";
+        var key = title.Length == 0 ? "" : title + "\u0001" + artist;
+        if (key == _lyricsKey) return;
+        _lyricsKey = key;
+
+        _lyricsCts?.Cancel();
+        if (key.Length == 0 || state.IsAdvertisement || !GetSetting("enableLyrics", true))
+        {
+            Lyrics = LyricsResult.Unavailable;
+            return;
+        }
+
+        Lyrics = LyricsResult.Loading;
+        var cts = _lyricsCts = new CancellationTokenSource();
+        _ = System.Threading.Tasks.Task.Run(async () =>
+        {
+            try
+            {
+                var result = await _lyricsService.GetAsync(title, artist, state.Album ?? "", state.Duration, cts.Token);
+                if (!cts.IsCancellationRequested && key == _lyricsKey) Lyrics = result;
+            }
+            catch (OperationCanceledException) { }
+            catch (Exception ex) { _logger.LogDebug($"Lyrics lookup failed: {ex.Message}"); }
+        });
+    }
+
+    /// <summary>Re-evaluates lyrics after Defaults[.enableLyrics] changes.</summary>
+    public void RefreshLyrics()
+    {
+        _lyricsKey = "";
+        if (MediaState is { } m) UpdateLyricsFor(m);
+    }
+
     private volatile bool _isClipboardDragInProgress;
     private Timer? _clipboardDragResetTimer;
 
@@ -118,7 +174,7 @@ public sealed class ShellViewModel : INotifyPropertyChanged
         _clipboardDragResetTimer?.Change(Timeout.Infinite, Timeout.Infinite);
     }
 
-    public ShellViewModel(ISettingsService settings, IWindowService windowService, IMediaService mediaService, ISystemMetricsService metricsService, ITimerService timerService, IClipboardService clipboardService, IShelfService shelfService, INotesService notesService, ILogger logger)
+    public ShellViewModel(ISettingsService settings, IWindowService windowService, IMediaService mediaService, ISystemMetricsService metricsService, ITimerService timerService, IClipboardService clipboardService, IShelfService shelfService, INotesService notesService, ILyricsService lyricsService, ILlmUsageService llmUsage, ILogger logger)
     {
         _settings = settings;
         _windowService = windowService;
@@ -128,6 +184,8 @@ public sealed class ShellViewModel : INotifyPropertyChanged
         _clipboardService = clipboardService;
         _shelfService = shelfService;
         _notesService = notesService;
+        _lyricsService = lyricsService;
+        _llmUsage = llmUsage;
         _logger = logger;
 
         RebuildTabs();
@@ -136,6 +194,7 @@ public sealed class ShellViewModel : INotifyPropertyChanged
         _mediaService.StateChanged += (_, state) =>
         {
             MediaState = state;
+            UpdateLyricsFor(state);
             _logger.LogDebug($"Media: {state.Title} - {state.Artist} | {(state.IsPlaying ? "playing" : "paused")}");
         };
 
@@ -213,6 +272,9 @@ public sealed class ShellViewModel : INotifyPropertyChanged
     public void RequestOpenSettings() => OpenSettingsRequested?.Invoke();
 
     public Task SendMediaCommand(MediaCommand command) => _mediaService.SendCommandAsync(command);
+
+    /// <summary>Seeks the current track (scrubber drag).</summary>
+    public Task SeekMedia(TimeSpan position) => _mediaService.SeekAsync(position);
 
     /// <summary>
     /// Advances playback control to the next detected media session (the

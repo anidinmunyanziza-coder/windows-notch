@@ -20,6 +20,11 @@
          so the top-level HWND is never resized per frame. NotchBg draws the real
          macOS notch shape (flat top with concave shoulders, rounded bottom) via a
          geometry rebuilt in code; its radii animate with the spring. -->
+    <Grid x:Name="WindowRoot">
+    <!-- Detached "satellite" capsules (live lyrics) float beside the notch on
+         this layer, *behind* the Surface, so a capsule merging back slides
+         under the notch and is absorbed by it. Display-only: never hit-tested. -->
+    <Canvas x:Name="SatelliteLayer" IsHitTestVisible="False"/>
     <Grid x:Name="Surface" HorizontalAlignment="Center" VerticalAlignment="Top">
         <Path x:Name="NotchBg" Fill="#000000">
             <Path.Effect>
@@ -30,5 +35,6 @@
         <!-- Matched-geometry heroes (album art, spectrum) and blur-replace ghosts
              fly here, above the content and clipped to the notch shape. -->
         <Canvas x:Name="MorphLayer" IsHitTestVisible="False"/>
+    </Grid>
     </Grid>
 </Window>
