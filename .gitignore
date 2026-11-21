@@ -23,3 +23,6 @@ graphify-out/
 # OS / OneDrive
 Thumbs.db
 desktop.ini
+
+# Packaged release builds
+release/
